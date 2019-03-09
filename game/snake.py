@@ -1,6 +1,14 @@
 from pygame.locals import *
+from random import randint
 import pygame
 import time
+
+
+def do_collide(x1, y1, x2, y2):
+    if x2 <= x1 <= x2 + Game.block_size - 5:
+        if y2 <= y1 <= y2 + Game.block_size - 5:
+            return True
+    return False
 
 
 class Apple:
@@ -16,68 +24,82 @@ class Apple:
 
 
 class Snake:
-    refresh_max = 2
 
     def __init__(self, length):
         self.length = length
         self.direction = 0
         self.refresh_counter = 0
-        self.x = []
-        self.y = []
-        for i in range(0, length):
-            self.x.append(0)
-            self.y.append(0)
+        self.x = [2 * Game.block_size, 1 * Game.block_size, 0]
+        self.y = [0]
+
+        # initial positions, no collision.
+        self.y.append(0)
+        self.y.append(0)
 
     def update(self):
-        self.refresh_counter = self.refresh_counter + 1
-        if self.refresh_counter > Snake.refresh_max:
-            # move tail
-            for i in range(self.length - 1, 0, -1):
-                self.x[i] = self.x[i - 1]
-                self.y[i] = self.y[i - 1]
+        # move tail
+        for i in range(self.length - 1, 0, -1):
+            self.x[i] = self.x[i - 1]
+            self.y[i] = self.y[i - 1]
 
-            # move head
-            if self.direction == 0:
-                self.x[0] = self.x[0] + Game.block_size
-            if self.direction == 1:
-                self.x[0] = self.x[0] - Game.block_size
-            if self.direction == 2:
-                self.y[0] = self.y[0] - Game.block_size
-            if self.direction == 3:
-                self.y[0] = self.y[0] + Game.block_size
-
-            self.refresh_counter = 0
+        # move head
+        if self.direction == 0:
+            self.x[0] = self.x[0] + Game.block_size
+        if self.direction == 1:
+            self.x[0] = self.x[0] - Game.block_size
+        if self.direction == 2:
+            self.y[0] = self.y[0] - Game.block_size
+        if self.direction == 3:
+            self.y[0] = self.y[0] + Game.block_size
 
     def move_right(self):
-        self.direction = 0
+        if self.direction != 1:
+            self.direction = 0
 
     def move_left(self):
-        self.direction = 1
+        if self.direction != 0:
+            self.direction = 1
 
     def move_up(self):
-        self.direction = 2
+        if self.direction != 3:
+            self.direction = 2
 
     def move_down(self):
-        self.direction = 3
+        if self.direction != 2:
+            self.direction = 3
 
     def draw(self, surface, block):
+        if len(self.x) < self.length:
+            self.x.append(self.x[len(self.x) - 1])
+            self.y.append(self.y[len(self.y) - 1])
         for i in range(0, self.length):
             surface.blit(block, (self.x[i], self.y[i]))
+
+    def log(self):
+        print("===================")
+        for i in range(0, self.length):
+            print("x[" + str(i) + "] (" + str(self.x[i]) + "," + str(self.y[i]) + ")")
 
 
 class Game:
     window_width = 800
     window_height = 600
     block_size = 50
-    delay = 20.0 / 1000.0
+    delay = 100.0 / 1000.0
 
     def __init__(self):
         self.running = True
         self.background_image = None
         self.snake_image = None
         self.apple_image = None
-        self.snake = Snake(5)
-        self.apple = Apple(5, 5)
+        self.snake = Snake(3)
+        self.apple = Apple(7, 7)
+
+    def get_width_bound(self):
+        return Game.window_width // Game.block_size
+
+    def get_height_bound(self):
+        return Game.window_height // Game.block_size
 
     def on_init(self):
         pygame.init()
@@ -91,6 +113,23 @@ class Game:
 
     def on_loop(self):
         self.snake.update()
+        # self.snake.log()
+
+        # self collision
+        for i in range(2, self.snake.length):
+            if do_collide(self.snake.x[0], self.snake.y[0], self.snake.x[i], self.snake.y[i]):
+                print("COLLISION: x[0] (" + str(self.snake.x[0]) + "," + str(self.snake.y[0]) + ") with x[" + str(i) + "] (" + str(self.snake.x[i]) + "," + str(self.snake.y[i]) + ")")
+                exit(0)
+
+        # apple collision
+        for i in range(0, self.snake.length - 1):
+            if do_collide(self.apple.x, self.apple.y, self.snake.x[i], self.snake.y[i]):
+                self.apple.x = randint(0, self.get_width_bound() - 1) * Game.block_size
+                self.apple.y = randint(0, self.get_height_bound() - 1) * Game.block_size
+                self.snake.length = self.snake.length + 1
+
+        # wall collision todo...
+
         pass
 
     def on_cleanup(self):
