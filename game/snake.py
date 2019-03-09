@@ -3,6 +3,18 @@ import pygame
 import time
 
 
+class Apple:
+    x = 0
+    y = 0
+
+    def __init__(self, x, y):
+        self.x = x * Game.block_size
+        self.y = y * Game.block_size
+
+    def draw(self, surface, image):
+        surface.blit(image, (self.x, self.y))
+
+
 class Snake:
     refresh_max = 2
 
@@ -61,17 +73,21 @@ class Game:
 
     def __init__(self):
         self.running = True
-        self.background = None
-        self.snake_block = None
+        self.background_image = None
+        self.snake_image = None
+        self.apple_image = None
         self.snake = Snake(5)
+        self.apple = Apple(5, 5)
 
     def on_init(self):
         pygame.init()
-        self.background = pygame.display.set_mode((Game.window_width, Game.window_height), pygame.HWSURFACE)
+        self.background_image = pygame.display.set_mode((Game.window_width, Game.window_height), pygame.HWSURFACE)
         pygame.display.set_caption('Snake')
         self.running = True
-        self.snake_block = pygame.image.load("snake_box.jpg").convert()
-        self.snake_block = pygame.transform.scale(self.snake_block, (Game.block_size, Game.block_size))
+        self.snake_image = pygame.image.load("snake_box.jpg").convert()
+        self.snake_image = pygame.transform.scale(self.snake_image, (Game.block_size, Game.block_size))
+        self.apple_image = pygame.image.load("apple.png").convert()
+        self.apple_image = pygame.transform.scale(self.apple_image, (Game.block_size, Game.block_size))
 
     def on_loop(self):
         self.snake.update()
@@ -85,8 +101,9 @@ class Game:
             self.running = False
 
     def on_render(self):
-        self.background.fill((0, 0, 0))
-        self.snake.draw(self.background, self.snake_block)
+        self.background_image.fill((0, 0, 0))
+        self.snake.draw(self.background_image, self.snake_image)
+        self.apple.draw(self.background_image, self.apple_image)
         pygame.display.flip()
 
     def on_execute(self):
