@@ -1,84 +1,117 @@
 from pygame.locals import *
 import pygame
+import time
 
 
 class Snake:
-    x = 0
-    y = 0
-    speed = 1
- 
+    refresh_max = 2
+
+    def __init__(self, length):
+        self.length = length
+        self.direction = 0
+        self.refresh_counter = 0
+        self.x = []
+        self.y = []
+        for i in range(0, length):
+            self.x.append(0)
+            self.y.append(0)
+
+    def update(self):
+        self.refresh_counter = self.refresh_counter + 1
+        if self.refresh_counter > Snake.refresh_max:
+            # move tail
+            for i in range(self.length - 1, 0, -1):
+                self.x[i] = self.x[i - 1]
+                self.y[i] = self.y[i - 1]
+
+            # move head
+            if self.direction == 0:
+                self.x[0] = self.x[0] + Game.block_size
+            if self.direction == 1:
+                self.x[0] = self.x[0] - Game.block_size
+            if self.direction == 2:
+                self.y[0] = self.y[0] - Game.block_size
+            if self.direction == 3:
+                self.y[0] = self.y[0] + Game.block_size
+
+            self.refresh_counter = 0
+
     def move_right(self):
-        self.x = self.x + self.speed
- 
+        self.direction = 0
+
     def move_left(self):
-        self.x = self.x - self.speed
- 
+        self.direction = 1
+
     def move_up(self):
-        self.y = self.y - self.speed
- 
+        self.direction = 2
+
     def move_down(self):
-        self.y = self.y + self.speed
+        self.direction = 3
+
+    def draw(self, surface, block):
+        for i in range(0, self.length):
+            surface.blit(block, (self.x[i], self.y[i]))
 
 
 class Game:
-    windowWidth = 800
-    windowHeight = 600
-    snake = 0
+    window_width = 800
+    window_height = 600
+    block_size = 50
+    delay = 20.0 / 1000.0
 
     def __init__(self):
-        self._running = True
-        self._display_surf = None
-        self._image_surf = None
-        self.snake = Snake()
+        self.running = True
+        self.background = None
+        self.snake_block = None
+        self.snake = Snake(5)
 
     def on_init(self):
         pygame.init()
-        self._display_surf = pygame.display.set_mode((self.windowWidth, self.windowHeight), pygame.HWSURFACE)
+        self.background = pygame.display.set_mode((Game.window_width, Game.window_height), pygame.HWSURFACE)
         pygame.display.set_caption('Snake')
-        self._running = True
-        self._image_surf = pygame.image.load("snake_box.jpg").convert()
-        self._image_surf = pygame.transform.scale(self._image_surf, (80, 80))
-
-    def on_event(self, event):
-        if event.type == QUIT:
-            self._running = False
+        self.running = True
+        self.snake_block = pygame.image.load("snake_box.jpg").convert()
+        self.snake_block = pygame.transform.scale(self.snake_block, (Game.block_size, Game.block_size))
 
     def on_loop(self):
+        self.snake.update()
         pass
-
-    def on_render(self):
-        self._display_surf.fill((0, 0, 0))
-        self._display_surf.blit(self._image_surf, (self.snake.x, self.snake.y))
-        pygame.display.flip()
 
     def on_cleanup(self):
         pygame.quit()
 
+    def on_event(self, event):
+        if event.type == QUIT:
+            self.running = False
+
+    def on_render(self):
+        self.background.fill((0, 0, 0))
+        self.snake.draw(self.background, self.snake_block)
+        pygame.display.flip()
+
     def on_execute(self):
         if self.on_init() == False:
-            self._running = False
+            self.running = False
 
-        while self._running:
+        while self.running:
             pygame.event.pump()
             keys = pygame.key.get_pressed()
 
             if keys[K_RIGHT]:
                 self.snake.move_right()
-
             if keys[K_LEFT]:
                 self.snake.move_left()
-
             if keys[K_UP]:
                 self.snake.move_up()
-
             if keys[K_DOWN]:
                 self.snake.move_down()
-
             if keys[K_ESCAPE]:
-                self._running = False
+                self.running = False
 
             self.on_loop()
             self.on_render()
+            time.sleep(Game.delay)
+
         self.on_cleanup()
 
 
