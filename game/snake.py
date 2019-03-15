@@ -172,9 +172,13 @@ def spawn_apple(snake):
     x = 0
     y = 0
     while not valid_apple:
+        valid_apple = True
         x = random.randint(0, BOARD_WIDTH - 1) * BLOCK_SIZE
         y = random.randint(0, BOARD_HEIGHT - 1) * BLOCK_SIZE
-        valid_apple = not check_collision(snake.get_head(), Segment(x, y))
+        for segment in snake.elements:
+            if check_collision(segment, Segment(x, y)):
+                valid_apple = False
+                break
 
     return Apple(x, y, True)
 
