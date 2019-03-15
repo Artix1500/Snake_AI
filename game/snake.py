@@ -12,7 +12,9 @@ KEY = {"UP": 1, "DOWN": 2, "LEFT": 3, "RIGHT": 4}
 
 
 def check_collision(pos1, pos2):
-    if pos1.x * BLOCK_SIZE < (pos2.x + 1) * BLOCK_SIZE and (pos1.x + 1) * BLOCK_SIZE > pos2.x * BLOCK_SIZE and pos1.y * BLOCK_SIZE < (pos2.y + 1) * BLOCK_SIZE and (pos1.y + 1) * BLOCK_SIZE > pos2.y * BLOCK_SIZE:
+    if pos1.x * BLOCK_SIZE < (pos2.x + 1) * BLOCK_SIZE and (
+            pos1.x + 1) * BLOCK_SIZE > pos2.x * BLOCK_SIZE and pos1.y * BLOCK_SIZE < (pos2.y + 1) * BLOCK_SIZE and (
+            pos1.y + 1) * BLOCK_SIZE > pos2.y * BLOCK_SIZE:
         return True
     return False
 
@@ -96,7 +98,8 @@ class Snake:
         self.direction = direction
 
     def check_crash(self):
-        if self.elements[0].x < 0 or self.elements[0].y < 0 or self.elements[0].x >= BOARD_WIDTH or self.elements[0].y >= BOARD_HEIGHT:
+        if self.elements[0].x < 0 or self.elements[0].y < 0 or self.elements[0].x >= BOARD_WIDTH or self.elements[
+            0].y >= BOARD_HEIGHT:
             return True
 
         counter = 1
@@ -130,36 +133,36 @@ class Snake:
         closest_down = 1
         head = self.elements[0]
 
-        while closest_right < BOARD_WIDTH:
+        while closest_right <= BOARD_WIDTH - head.x:
             if self.collides_with_body(Segment(head.x + closest_right, head.y)):
                 break
             closest_right += 1
 
-        while closest_left < BOARD_WIDTH:
+        while closest_left <= head.x + 1:
             if self.collides_with_body(Segment(head.x - closest_left, head.y)):
                 break
             closest_left += 1
 
-        while closest_up < BOARD_HEIGHT:
-            if self.collides_with_body(Segment(head.x, head.y - closest_up)):
-                break
-            closest_up += 1
-
-        while closest_down < BOARD_HEIGHT:
+        while closest_down <= BOARD_HEIGHT - head.y:
             if self.collides_with_body(Segment(head.x, head.y + closest_down)):
                 break
             closest_down += 1
 
-        closest_right = min(closest_right, BOARD_WIDTH - self.elements[0].x)
-        closest_left = min(closest_left, self.elements[0].x + 1)
-        closest_up = min(closest_up, self.elements[0].y + 1)
-        closest_down = min(closest_down, BOARD_HEIGHT - self.elements[0].y)
+        while closest_up <= head.y + 1:
+            if self.collides_with_body(Segment(head.x, head.y - closest_up)):
+                break
+            closest_up += 1
+
+        closest_right = min(closest_right, BOARD_WIDTH - head.x)
+        closest_left = min(closest_left, head.x + 1)
+        closest_down = min(closest_down, BOARD_HEIGHT - head.y)
+        closest_up = min(closest_up, head.y + 1)
 
         crashes = {
             "right": closest_right,
             "left": closest_left,
-            "up": closest_up,
-            "down": closest_down
+            "down": closest_down,
+            "up": closest_up
         }
 
         print("\nRight crash: {0}, left crash: {1}, up crash: {2}, down crash: {3}.".format(
