@@ -6,8 +6,8 @@ FPS = 15
 BLOCK_SIZE = 50
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 800
-BOARD_HEIGHT = SCREEN_HEIGHT / BLOCK_SIZE
-BOARD_WIDTH = SCREEN_WIDTH / BLOCK_SIZE
+BOARD_HEIGHT = SCREEN_HEIGHT // BLOCK_SIZE
+BOARD_WIDTH = SCREEN_WIDTH // BLOCK_SIZE
 KEY = {"UP": 1, "DOWN": 2, "LEFT": 3, "RIGHT": 4}
 
 
@@ -39,12 +39,10 @@ class Snake:
         self.x = x
         self.y = y
         self.direction = KEY["DOWN"]
-
         self.elements = []
         head = Segment(self.x, self.y)
         head.direction = KEY["DOWN"]
         self.elements.append(head)
-
         self.move()
         self.grow()
         self.move()
@@ -115,17 +113,55 @@ class Snake:
             screen.blit(snake_image, (self.elements[counter].x * BLOCK_SIZE, self.elements[counter].y * BLOCK_SIZE))
             counter += 1
 
+    def collides_with_body(self, block):
+        for segment in self.elements:
+            if check_collision(block, segment):
+                return True
+        return False
+
     def display_log(self):
         print("Segments: ", end="")
         for segment in self.elements:
             print("({0}, {1}) ".format(segment.x, segment.y), end="")
 
+        closest_right = 1
+        closest_left = 1
+        closest_up = 1
+        closest_down = 1
+        head = self.elements[0]
+
+        while closest_right < BOARD_WIDTH:
+            if self.collides_with_body(Segment(head.x + closest_right, head.y)):
+                break
+            closest_right += 1
+
+        while closest_left < BOARD_WIDTH:
+            if self.collides_with_body(Segment(head.x - closest_left, head.y)):
+                break
+            closest_left += 1
+
+        while closest_up < BOARD_HEIGHT:
+            if self.collides_with_body(Segment(head.x, head.y - closest_up)):
+                break
+            closest_up += 1
+
+        while closest_down < BOARD_HEIGHT:
+            if self.collides_with_body(Segment(head.x, head.y + closest_down)):
+                break
+            closest_down += 1
+
+        closest_right = min(closest_right, BOARD_WIDTH - self.elements[0].x)
+        closest_left = min(closest_left, self.elements[0].x + 1)
+        closest_up = min(closest_up, self.elements[0].y + 1)
+        closest_down = min(closest_down, BOARD_HEIGHT - self.elements[0].y)
+
         crashes = {
-            "right": ((SCREEN_WIDTH - self.elements[0].x) // BLOCK_SIZE),
-            "left": (self.elements[0].x // BLOCK_SIZE) + 1,
-            "up": (self.elements[0].y // BLOCK_SIZE) + 1,
-            "down": ((SCREEN_HEIGHT - self.elements[0].y) // BLOCK_SIZE)
+            "right": closest_right,
+            "left": closest_left,
+            "up": closest_up,
+            "down": closest_down
         }
+
         print("\nRight crash: {0}, left crash: {1}, up crash: {2}, down crash: {3}.".format(
             crashes["right"], crashes["left"], crashes["up"], crashes["down"]))
 
