@@ -2,8 +2,8 @@ import pygame
 import random
 import sys
 
-FPS = 20
-BLOCK_SIZE = 25
+FPS = 15
+BLOCK_SIZE = 50
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 800
 BOARD_HEIGHT = SCREEN_HEIGHT / BLOCK_SIZE
@@ -11,21 +11,10 @@ BOARD_WIDTH = SCREEN_WIDTH / BLOCK_SIZE
 KEY = {"UP": 1, "DOWN": 2, "LEFT": 3, "RIGHT": 4}
 
 
-def check_collision(pos1, size1, pos2, size2):
-    if pos1.x < pos2.x + size2 and pos1.x + size1 > pos2.x and pos1.y < pos2.y + size2 and pos1.y + size1 > pos2.y:
+def check_collision(pos1, pos2):
+    if pos1.x < pos2.x + BLOCK_SIZE and pos1.x + BLOCK_SIZE > pos2.x and pos1.y < pos2.y + BLOCK_SIZE and pos1.y + BLOCK_SIZE > pos2.y:
         return True
     return False
-
-
-def pass_wall(entity):
-    if entity.x > SCREEN_WIDTH:
-        entity.x = 0
-    if entity.x < 0:
-        entity.x = SCREEN_WIDTH - BLOCK_SIZE
-    if entity.y > SCREEN_HEIGHT:
-        entity.y = 0
-    if entity.y < 0:
-        entity.y = SCREEN_HEIGHT - BLOCK_SIZE
 
 
 class Apple:
@@ -36,7 +25,6 @@ class Apple:
 
     def draw(self, screen):
         screen.blit(apple_image, (self.x, self.y))
-        # pygame.draw.rect(screen, pygame.color.Color("red"), (self.x, self.y, BLOCK_SIZE, BLOCK_SIZE), 0)
 
 
 class Segment:
@@ -50,17 +38,16 @@ class Snake:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.direction = KEY["DOWN"]
 
         self.elements = []
         head = Segment(self.x, self.y)
-        head.direction = KEY["UP"]
+        head.direction = KEY["DOWN"]
         self.elements.append(head)
 
-        self.direction = KEY["UP"]
         self.move()
-        for i in range(3):
-            self.grow()
-            self.move()
+        self.grow()
+        self.move()
 
     def move(self):
         last_element = len(self.elements) - 1
@@ -115,25 +102,21 @@ class Snake:
             self.direction = direction
 
     def check_crash(self):
+        if self.elements[0].x < 0 or self.elements[0].y < 0 or self.elements[0].x >= SCREEN_WIDTH or self.elements[0].y >= SCREEN_HEIGHT:
+            return True
+
         counter = 1
         while counter < len(self.elements) - 1:
-            if check_collision(self.elements[0], BLOCK_SIZE, self.elements[counter], BLOCK_SIZE):
-                # print("self.elements[0]=(" + str(self.elements[0].x) +
-                #       ", " + str(self.elements[0].y) + ") collides with self.elements[" + str(counter) + "]=(" +
-                #       str(self.elements[counter].x) + ", " + str(self.elements[counter].y) + ")")
+            if check_collision(self.elements[0], self.elements[counter]):
                 return True
             counter += 1
         return False
 
     def draw(self, screen):
         screen.blit(snake_image, (self.elements[0].x, self.elements[0].y))
-        # pygame.draw.rect(screen, pygame.color.Color("black"),
-        #                  (self.elements[0].x, self.elements[0].y, BLOCK_SIZE, BLOCK_SIZE), 0)
         counter = 1
         while counter < len(self.elements):
             screen.blit(snake_image, (self.elements[counter].x, self.elements[counter].y))
-            # pygame.draw.rect(screen, pygame.color.Color("green"),
-            #                  (self.elements[counter].x, self.elements[counter].y, BLOCK_SIZE, BLOCK_SIZE), 0)
             counter += 1
 
 
@@ -165,7 +148,7 @@ def spawn_apple(snake):
     while not valid_apple:
         x = random.randint(0, BOARD_WIDTH - 1) * BLOCK_SIZE
         y = random.randint(0, BOARD_HEIGHT - 1) * BLOCK_SIZE
-        valid_apple = not check_collision(snake.get_head(), BLOCK_SIZE, Segment(x, y), BLOCK_SIZE)
+        valid_apple = not check_collision(snake.get_head(), Segment(x, y))
 
     return Apple(x, y, True)
 
@@ -207,7 +190,7 @@ def run_game():
     score = 0
 
     # Snake initialization
-    main_snake = Snake(50 * BLOCK_SIZE, 50*BLOCK_SIZE)
+    main_snake = Snake(1 * BLOCK_SIZE, 1 * BLOCK_SIZE)
 
     # Apples
     apple_eaten = False
@@ -225,12 +208,11 @@ def run_game():
             running = False
 
         # Collision check
-        pass_wall(main_snake)
         if main_snake.check_crash():
             end_game()
 
         if apple.exists:
-            if check_collision(main_snake.get_head(), BLOCK_SIZE, apple, BLOCK_SIZE):
+            if check_collision(main_snake.get_head(), apple):
                 main_snake.grow()
                 apple.exists = False
                 score += 5
