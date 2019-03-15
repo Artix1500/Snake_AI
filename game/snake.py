@@ -12,7 +12,7 @@ KEY = {"UP": 1, "DOWN": 2, "LEFT": 3, "RIGHT": 4}
 
 
 def check_collision(pos1, pos2):
-    if pos1.x < pos2.x + BLOCK_SIZE and pos1.x + BLOCK_SIZE > pos2.x and pos1.y < pos2.y + BLOCK_SIZE and pos1.y + BLOCK_SIZE > pos2.y:
+    if pos1.x * BLOCK_SIZE < (pos2.x + 1) * BLOCK_SIZE and (pos1.x + 1) * BLOCK_SIZE > pos2.x * BLOCK_SIZE and pos1.y * BLOCK_SIZE < (pos2.y + 1) * BLOCK_SIZE and (pos1.y + 1) * BLOCK_SIZE > pos2.y * BLOCK_SIZE:
         return True
     return False
 
@@ -24,7 +24,7 @@ class Apple:
         self.exists = state
 
     def draw(self, screen):
-        screen.blit(apple_image, (self.x, self.y))
+        screen.blit(apple_image, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE))
 
 
 class Segment:
@@ -48,6 +48,8 @@ class Snake:
         self.move()
         self.grow()
         self.move()
+        self.grow()
+        self.move()
 
     def move(self):
         last_element = len(self.elements) - 1
@@ -65,13 +67,13 @@ class Snake:
         last_segment.direction = self.elements[0].direction
 
         if self.elements[0].direction == KEY["UP"]:
-            last_segment.y = self.elements[0].y - BLOCK_SIZE
+            last_segment.y = self.elements[0].y - 1
         elif self.elements[0].direction == KEY["DOWN"]:
-            last_segment.y = self.elements[0].y + BLOCK_SIZE
+            last_segment.y = self.elements[0].y + 1
         elif self.elements[0].direction == KEY["LEFT"]:
-            last_segment.x = self.elements[0].x - BLOCK_SIZE
+            last_segment.x = self.elements[0].x - 1
         elif self.elements[0].direction == KEY["RIGHT"]:
-            last_segment.x = self.elements[0].x + BLOCK_SIZE
+            last_segment.x = self.elements[0].x + 1
         self.elements.insert(0, last_segment)
 
     def get_head(self):
@@ -82,13 +84,13 @@ class Snake:
         self.elements[last_element].direction = self.elements[last_element].direction
 
         if self.elements[last_element].direction == KEY["UP"]:
-            new_segment = Segment(self.elements[last_element].x, self.elements[last_element].y - BLOCK_SIZE)
+            new_segment = Segment(self.elements[last_element].x, self.elements[last_element].y - 1)
         elif self.elements[last_element].direction == KEY["DOWN"]:
-            new_segment = Segment(self.elements[last_element].x, self.elements[last_element].y + BLOCK_SIZE)
+            new_segment = Segment(self.elements[last_element].x, self.elements[last_element].y + 1)
         elif self.elements[last_element].direction == KEY["LEFT"]:
-            new_segment = Segment(self.elements[last_element].x - BLOCK_SIZE, self.elements[last_element].y)
+            new_segment = Segment(self.elements[last_element].x - 1, self.elements[last_element].y)
         elif self.elements[last_element].direction == KEY["RIGHT"]:
-            new_segment = Segment(self.elements[last_element].x + BLOCK_SIZE, self.elements[last_element].y)
+            new_segment = Segment(self.elements[last_element].x + 1, self.elements[last_element].y)
 
         self.elements.append(new_segment)
 
@@ -96,7 +98,7 @@ class Snake:
         self.direction = direction
 
     def check_crash(self):
-        if self.elements[0].x < 0 or self.elements[0].y < 0 or self.elements[0].x >= SCREEN_WIDTH or self.elements[0].y >= SCREEN_HEIGHT:
+        if self.elements[0].x < 0 or self.elements[0].y < 0 or self.elements[0].x >= BOARD_WIDTH or self.elements[0].y >= BOARD_HEIGHT:
             return True
 
         counter = 1
@@ -107,20 +109,24 @@ class Snake:
         return False
 
     def draw(self, screen):
-        screen.blit(snake_image, (self.elements[0].x, self.elements[0].y))
+        screen.blit(snake_image, (self.elements[0].x * BLOCK_SIZE, self.elements[0].y * BLOCK_SIZE))
         counter = 1
         while counter < len(self.elements):
-            screen.blit(snake_image, (self.elements[counter].x, self.elements[counter].y))
+            screen.blit(snake_image, (self.elements[counter].x * BLOCK_SIZE, self.elements[counter].y * BLOCK_SIZE))
             counter += 1
 
-    def display_distances(self):
+    def display_log(self):
+        print("Segments: ", end="")
+        for segment in self.elements:
+            print("({0}, {1}) ".format(segment.x, segment.y), end="")
+
         crashes = {
             "right": ((SCREEN_WIDTH - self.elements[0].x) // BLOCK_SIZE),
             "left": (self.elements[0].x // BLOCK_SIZE) + 1,
             "up": (self.elements[0].y // BLOCK_SIZE) + 1,
             "down": ((SCREEN_HEIGHT - self.elements[0].y) // BLOCK_SIZE)
         }
-        print("Right crash: {0}, left crash: {1}, up crash: {2}, down crash: {3}.".format(
+        print("\nRight crash: {0}, left crash: {1}, up crash: {2}, down crash: {3}.".format(
             crashes["right"], crashes["left"], crashes["up"], crashes["down"]))
 
 
@@ -173,8 +179,8 @@ def spawn_apple(snake):
     y = 0
     while not valid_apple:
         valid_apple = True
-        x = random.randint(0, BOARD_WIDTH - 1) * BLOCK_SIZE
-        y = random.randint(0, BOARD_HEIGHT - 1) * BLOCK_SIZE
+        x = random.randint(0, BOARD_WIDTH - 1)
+        y = random.randint(0, BOARD_HEIGHT - 1)
         for segment in snake.elements:
             if check_collision(segment, Segment(x, y)):
                 valid_apple = False
@@ -220,14 +226,9 @@ def redraw_game(apple, snake, score):
 
 def run_game():
     score = 0
-
-    # Snake initialization
-    main_snake = Snake(1 * BLOCK_SIZE, 1 * BLOCK_SIZE)
-
-    # Apples
+    main_snake = Snake(1, 1)
     apple_eaten = False
     apple = spawn_apple(main_snake)
-
     running = True
 
     while running:
@@ -235,33 +236,36 @@ def run_game():
         # Draw game
         redraw_game(apple, main_snake, score)
 
-        # Check collisions
+        # Check collisions (walls and self)
         if main_snake.check_crash():
             end_game()
 
         # Check apple availability
+        grow_snake = False
         if apple.exists:
             if check_collision(main_snake.get_head(), apple):
-                main_snake.grow()
+                grow_snake = True
                 apple.exists = False
                 score += 5
                 apple_eaten = True
 
-        # Spawn apple (if needed)
+        # Spawn apple
         if apple_eaten:
             apple_eaten = False
             apple = spawn_apple(main_snake)
-            print("Wow, you've eaten an apple! Next apple: ({0}, {1})".format(apple.x // BLOCK_SIZE, apple.y // BLOCK_SIZE))
+            print("Wow, you've eaten an apple! Next apple: ({0}, {1})".format(apple.x, apple.y))
             redraw_game(apple, main_snake, score)
 
-        # Wait for user input
-        main_snake.display_distances()
-        print("Waiting for input...\n")
+        # Wait for user input (here goes agent's move)
+        main_snake.display_log()
+        print("Waiting for input...")
         key_pressed = wait_for_key()
         if key_pressed == "exit":
             running = False
 
         # Move snake
+        if grow_snake:
+            main_snake.grow()
         if key_pressed:
             main_snake.set_direction(key_pressed)
         main_snake.move()
