@@ -93,13 +93,7 @@ class Snake:
         self.elements.append(new_segment)
 
     def set_direction(self, direction):
-        if (self.direction == KEY["RIGHT"] and direction == KEY["LEFT"] or
-                self.direction == KEY["LEFT"] and direction == KEY["RIGHT"] or
-                self.direction == KEY["UP"] and direction == KEY["DOWN"] or
-                self.direction == KEY["DOWN"] and direction == KEY["UP"]):
-            pass
-        else:
-            self.direction = direction
+        self.direction = direction
 
     def check_crash(self):
         if self.elements[0].x < 0 or self.elements[0].y < 0 or self.elements[0].x >= SCREEN_WIDTH or self.elements[0].y >= SCREEN_HEIGHT:
@@ -128,7 +122,6 @@ class Snake:
         }
         print("Right crash: {0}, left crash: {1}, up crash: {2}, down crash: {3}.".format(
             crashes["right"], crashes["left"], crashes["up"], crashes["down"]))
-
 
 
 def read_key():
@@ -211,11 +204,14 @@ def draw_score(score):
     main_screen.blit(score_area, (SCREEN_WIDTH - 45, 10))
 
 
-def draw_game_time(game_time_value):
-    game_time = score_font.render("Time:", 1, pygame.Color("white"))
-    game_time_area = score_area_font.render(str(game_time_value / 1000), 1, pygame.Color("white"))
-    main_screen.blit(game_time, (30, 10))
-    main_screen.blit(game_time_area, (105, 10))
+def redraw_game(apple, snake, score):
+    main_screen.fill(background_color)
+    if apple.exists:
+        apple.draw(main_screen)
+    snake.draw(main_screen)
+    draw_score(score)
+    pygame.display.flip()
+    pygame.display.update()
 
 
 def run_game():
@@ -228,21 +224,12 @@ def run_game():
     apple_eaten = False
     apple = spawn_apple(main_snake)
 
-    start_time = pygame.time.get_ticks()
     running = True
 
     while running:
 
         # Draw game
-        main_screen.fill(background_color)
-        if apple.exists:
-            apple.draw(main_screen)
-        main_snake.draw(main_screen)
-        draw_score(score)
-        game_time = pygame.time.get_ticks() - start_time
-        draw_game_time(game_time)
-        pygame.display.flip()
-        pygame.display.update()
+        redraw_game(apple, main_snake, score)
 
         # Check collisions
         if main_snake.check_crash():
@@ -256,6 +243,13 @@ def run_game():
                 score += 5
                 apple_eaten = True
 
+        # Spawn apple (if needed)
+        if apple_eaten:
+            apple_eaten = False
+            apple = spawn_apple(main_snake)
+            print("Wow, you've eaten an apple! Next apple: ({0}, {1})".format(apple.x // BLOCK_SIZE, apple.y // BLOCK_SIZE))
+            redraw_game(apple, main_snake, score)
+
         # Wait for user input
         main_snake.display_distances()
         print("Waiting for input...\n")
@@ -267,11 +261,6 @@ def run_game():
         if key_pressed:
             main_snake.set_direction(key_pressed)
         main_snake.move()
-
-        # Spawn apple (if needed)
-        if apple_eaten:
-            apple_eaten = False
-            apple = spawn_apple(main_snake)
 
 
 if __name__ == "__main__":
