@@ -119,9 +119,42 @@ class Snake:
             screen.blit(snake_image, (self.elements[counter].x, self.elements[counter].y))
             counter += 1
 
+    def display_distances(self):
+        crashes = {
+            "right": ((SCREEN_WIDTH - self.elements[0].x) // BLOCK_SIZE),
+            "left": (self.elements[0].x // BLOCK_SIZE) + 1,
+            "up": (self.elements[0].y // BLOCK_SIZE) + 1,
+            "down": ((SCREEN_HEIGHT - self.elements[0].y) // BLOCK_SIZE)
+        }
+        print("Right crash: {0}, left crash: {1}, up crash: {2}, down crash: {3}.".format(
+            crashes["right"], crashes["left"], crashes["up"], crashes["down"]))
+
+
 
 def read_key():
     for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                return KEY["UP"]
+            elif event.key == pygame.K_DOWN:
+                return KEY["DOWN"]
+            elif event.key == pygame.K_LEFT:
+                return KEY["LEFT"]
+            elif event.key == pygame.K_RIGHT:
+                return KEY["RIGHT"]
+            elif event.key == pygame.K_ESCAPE:
+                return "exit"
+            elif event.key == pygame.K_y:
+                return "yes"
+            elif event.key == pygame.K_n:
+                return "no"
+        if event.type == pygame.QUIT:
+            sys.exit()
+
+
+def wait_for_key():
+    while True:
+        event = pygame.event.wait()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 return KEY["UP"]
@@ -169,7 +202,6 @@ def end_game():
         elif my_key == "no":
             break
         my_key = read_key()
-        game_clock.tick(FPS)
     sys.exit()
 
 
@@ -200,17 +232,23 @@ def run_game():
     running = True
 
     while running:
-        game_clock.tick(FPS)
 
-        # Input
-        key_pressed = read_key()
-        if key_pressed == "exit":
-            running = False
+        # Draw game
+        main_screen.fill(background_color)
+        if apple.exists:
+            apple.draw(main_screen)
+        main_snake.draw(main_screen)
+        draw_score(score)
+        game_time = pygame.time.get_ticks() - start_time
+        draw_game_time(game_time)
+        pygame.display.flip()
+        pygame.display.update()
 
-        # Collision check
+        # Check collisions
         if main_snake.check_crash():
             end_game()
 
+        # Check apple availability
         if apple.exists:
             if check_collision(main_snake.get_head(), apple):
                 main_snake.grow()
@@ -218,28 +256,22 @@ def run_game():
                 score += 5
                 apple_eaten = True
 
-        # Moving snake
+        # Wait for user input
+        main_snake.display_distances()
+        print("Waiting for input...\n")
+        key_pressed = wait_for_key()
+        if key_pressed == "exit":
+            running = False
+
+        # Move snake
         if key_pressed:
             main_snake.set_direction(key_pressed)
         main_snake.move()
 
-        # Spawning apple
+        # Spawn apple (if needed)
         if apple_eaten:
             apple_eaten = False
             apple = spawn_apple(main_snake)
-
-        # Drawing
-        main_screen.fill(background_color)
-        if apple.exists:
-            apple.draw(main_screen)
-
-        main_snake.draw(main_screen)
-        draw_score(score)
-        game_time = pygame.time.get_ticks() - start_time
-        draw_game_time(game_time)
-
-        pygame.display.flip()
-        pygame.display.update()
 
 
 if __name__ == "__main__":
@@ -258,7 +290,6 @@ if __name__ == "__main__":
     score_msg = score_font.render("Score:", 1, pygame.Color("white"))
     score_msg_size = score_font.size("Score")
     background_color = pygame.Color(100, 100, 100)
-    game_clock = pygame.time.Clock()
     apple_image = pygame.transform.scale(pygame.image.load("apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
     snake_image = pygame.transform.scale(pygame.image.load("snake_box.jpg").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
 
