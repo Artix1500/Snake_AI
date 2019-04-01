@@ -1,6 +1,8 @@
 import pygame
 import random
 import sys
+import time
+
 
 FPS = 15
 BLOCK_SIZE = 50
@@ -189,10 +191,30 @@ def read_key():
         if event.type == pygame.QUIT:
             sys.exit()
 
+def get_order(order):
+    if order == 1:
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RIGHT)
+    elif order == 2:
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_LEFT)
+    elif order == 3:
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_UP)
+    elif order == 4:
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_DOWN)
 
+    pygame.event.post(event)
+    #pygame.event.post(pygame.KEYDOWN)
+    #event1 = pygame.event.Event(pygame.USEREVENT, {"greeted": False, "jumped": 10, "ID": 1})
+    #event = pygame.event.Event(pygame.KEYDOWN,key=pygame.K_UP)
+    #{'mod': 0, 'scancode': 30, 'key': pg.K_a, 'unicode': 'a'}
+    #pygame.event.post(event)
+    #pygame.event.post(event2)
+
+    #if order == 1
+     #   pygame.event.Kd
 def wait_for_key():
     while True:
         event = pygame.event.wait()
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 return KEY["UP"]
@@ -298,6 +320,9 @@ def run_game():
         # Wait for user input (here goes agent's move)
         main_snake.display_log()
         print("Waiting for input...")
+        #OBSLUGA WEJSCIA
+        get_order(random.randint(1,4))
+        time.sleep(0.5)
         key_pressed = wait_for_key()
         if key_pressed == "exit":
             running = False
@@ -306,7 +331,9 @@ def run_game():
         if grow_snake:
             main_snake.grow()
         if key_pressed:
+            #OBSLUGA WEJSCIA
             main_snake.set_direction(key_pressed)
+        #OBSLUGA WEJSCIA
         main_snake.move()
 
 

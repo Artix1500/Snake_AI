@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('D:\studia\Projekty\ML\Snake_AI')
+
 from game import snake as game
 import tensorflow as tf
 
