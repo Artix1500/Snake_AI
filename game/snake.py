@@ -78,6 +78,7 @@ class Snake:
             last_segment.x = self.elements[0].x + 1
         self.elements.insert(0, last_segment)
 
+
     def get_head(self):
         return self.elements[0]
 
@@ -191,26 +192,30 @@ def read_key():
         if event.type == pygame.QUIT:
             sys.exit()
 
-def get_order(order):
-    if order == 1:
-        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RIGHT)
-    elif order == 2:
-        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_LEFT)
-    elif order == 3:
+def send_state(snake,apple):
+    # sends actual state in table of ints
+    # apple.x,apple.y, snake.direction, all snake.elements(x,y)
+    ret =[apple.x, apple.y, snake.direction]
+    for e in snake.elements:
+        ret.append(e.x)
+        ret.append(e.y)
+    print(ret)
+    return ret
+def get_order(order,snake,apple):
+    #sending state to agent
+    #send_state(snake,apple)
+    if order == KEY["UP"]:
         event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_UP)
-    elif order == 4:
+    elif order == KEY["DOWN"]:
         event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_DOWN)
-
+    elif order == KEY["LEFT"]:
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_LEFT)
+    elif order == KEY["RIGHT"]:
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RIGHT)
+    #make the move
     pygame.event.post(event)
-    #pygame.event.post(pygame.KEYDOWN)
-    #event1 = pygame.event.Event(pygame.USEREVENT, {"greeted": False, "jumped": 10, "ID": 1})
-    #event = pygame.event.Event(pygame.KEYDOWN,key=pygame.K_UP)
-    #{'mod': 0, 'scancode': 30, 'key': pg.K_a, 'unicode': 'a'}
-    #pygame.event.post(event)
-    #pygame.event.post(event2)
 
-    #if order == 1
-     #   pygame.event.Kd
+
 def wait_for_key():
     while True:
         event = pygame.event.wait()
@@ -320,8 +325,9 @@ def run_game():
         # Wait for user input (here goes agent's move)
         main_snake.display_log()
         print("Waiting for input...")
-        #OBSLUGA WEJSCIA
-        get_order(random.randint(1,4))
+        # Here agent is telling what to do after seing state
+        #get_order(random.randint(1,4),main_snake,apple)
+        get_order(2 ,main_snake,apple)
         time.sleep(0.5)
         key_pressed = wait_for_key()
         if key_pressed == "exit":
@@ -331,11 +337,81 @@ def run_game():
         if grow_snake:
             main_snake.grow()
         if key_pressed:
-            #OBSLUGA WEJSCIA
             main_snake.set_direction(key_pressed)
-        #OBSLUGA WEJSCIA
         main_snake.move()
+main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
+score_font = pygame.font.Font(None, 25)
+score_area_font = pygame.font.Font(None, 25)
+game_over_font = pygame.font.Font(None, 45)
+play_again_font = score_area_font
+score_msg = score_font.render("Score:", 1, pygame.Color("white"))
+score_msg_size = score_font.size("Score")
+background_color = pygame.Color(100, 100, 100)
+apple_image = pygame.transform.scale(pygame.image.load("apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
+snake_image = pygame.transform.scale(pygame.image.load("snake_box.jpg").convert_alpha(),
+                                             (BLOCK_SIZE, BLOCK_SIZE))
+class Game:
+    def __init__(self):
+        self.score = 0
+        self.main_snake = Snake(1, 1)
+        self.apple_eaten = False
+        self.apple = spawn_apple(self.main_snake)
+        self.running = True
 
+
+        self.game_state = self.main_snake.display_log()
+
+
+    def redraw_game(self,apple, snake, score):
+        main_screen.fill(self.background_color)
+        if self.apple.exists:
+            self.apple.draw(main_screen)
+        snake.draw(main_screen)
+        draw_score(self.score)
+        pygame.display.flip()
+        pygame.display.update()
+    def run(self,action):
+        # Draw game
+        self.redraw_game(self.apple, self.main_snake, self.score)
+
+        # Check collisions (walls and self)
+        if main_snake.check_crash():
+            end_game()
+
+        # Check apple availability
+        grow_snake = False
+        if self.apple.exists:
+            if check_collision(main_snake.get_head(), self.apple):
+                grow_snake = True
+                self.apple.exists = False
+                self.score += 5
+                apple_eaten = True
+
+        # Spawn apple
+        if self.apple_eaten:
+            apple_eaten = False
+            self.apple = spawn_apple(main_snake)
+            print("Wow, you've eaten an apple! Next apple: ({0}, {1})".format(self.apple.x, self.apple.y))
+            self.redraw_game(self.apple, self.main_snake, self.score)
+
+        # Wait for user input (here goes agent's move)
+        self.main_snake.display_log()
+        print("Waiting for input...")
+        # Here agent is telling what to do
+        # get_order(random.randint(1,4),main_snake,apple)
+        get_order(action)
+        time.sleep(0.5)
+        key_pressed = wait_for_key()
+        if key_pressed == "exit":
+            running = False
+
+        # Move snake
+        if grow_snake:
+            self.main_snake.grow()
+        if key_pressed:
+            self.main_snake.set_direction(key_pressed)
+        self.main_snake.move()
+        return send_state(self.main_snake,self.apple)
 
 if __name__ == "__main__":
     # Screen setup
