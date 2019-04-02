@@ -300,10 +300,10 @@ class Game:
 
             # Wait for user input (here goes agent's move)
             print("Waiting for action...")
+            action_key = random.randrange(4)+1
             if ENABLE_KEYBOARD:
                 action_key = self.wait_for_action()
-            k = random.randrange(4)+1
-            self.action(k)
+            self.action(action_key)
             self.last_info = self.get_info()
             pygame.time.Clock().tick(1)
 
