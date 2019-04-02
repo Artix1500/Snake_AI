@@ -1,8 +1,10 @@
+import time
+
 import pygame
 import random
 import sys
 
-ENABLE_KEYBOARD = True
+ENABLE_KEYBOARD = False
 BLOCK_SIZE = 50
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 800
@@ -300,8 +302,10 @@ class Game:
             print("Waiting for action...")
             if ENABLE_KEYBOARD:
                 action_key = self.wait_for_action()
-            self.action(action_key)
+            k = random.randrange(4)+1
+            self.action(k)
             self.last_info = self.get_info()
+            pygame.time.Clock().tick(1)
 
 
 if __name__ == "__main__":
@@ -326,3 +330,6 @@ if __name__ == "__main__":
     # Game initialization
     game = Game()
     game.run_game()
+
+
+
