@@ -27,7 +27,7 @@ class Apple:
         self.y = y
         self.exists = state
 
-    def draw(self, screen):
+    def draw(self, screen, apple_image):
         screen.blit(apple_image, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE))
 
 
@@ -111,7 +111,7 @@ class Snake:
             counter += 1
         return False
 
-    def draw(self, screen):
+    def draw(self, screen, snake_image):
         screen.blit(snake_image, (self.elements[0].x * BLOCK_SIZE, self.elements[0].y * BLOCK_SIZE))
         counter = 1
         while counter < len(self.elements):
@@ -135,6 +135,21 @@ class Game:
         self.last_info = self.get_info()
         self.grow_snake = False
 
+        pygame.init()
+        pygame.display.set_caption("Snake")
+        pygame.font.init()
+        random.seed()
+        self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
+        self.score_font = pygame.font.Font(None, 25)
+        self.score_area_font = pygame.font.Font(None, 25)
+        self.game_over_font = pygame.font.Font(None, 45)
+        self.play_again_font = self.score_area_font
+        self.score_msg = self.score_font.render("Score:", 1, pygame.Color("white"))
+        self.score_msg_size = self.score_font.size("Score")
+        self.background_color = pygame.Color(100, 100, 100)
+        self.apple_image = pygame.transform.scale(pygame.image.load("D://studia//Projekty//ML//Snake_AI//game//apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
+        self.snake_image = pygame.transform.scale(pygame.image.load("D://studia//Projekty//ML//Snake_AI//game//snake_box.jpg").convert_alpha(),
+                                             (BLOCK_SIZE, BLOCK_SIZE))
     def get_info(self):
         closest_right = 1
         closest_left = 1
@@ -189,6 +204,18 @@ class Game:
 
         return info
 
+    def get_action(self, action):
+        # sending state to agent
+        if action == KEY["UP"]:
+            event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_UP)
+        elif action == KEY["DOWN"]:
+            event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_DOWN)
+        elif action == KEY["LEFT"]:
+            event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_LEFT)
+        elif action == KEY["RIGHT"]:
+            event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RIGHT)
+        # make the move
+        pygame.event.post(event)
     def wait_for_action(self):
         while True:
             event = pygame.event.wait()
@@ -224,37 +251,42 @@ class Game:
                     break
 
         return Apple(x, y, True)
-
+    def rerun(self):
+        self.__init__()
+        self.run(random.randint(1,4))
     def end_game(self):
-        message = game_over_font.render("Game Over", 1, pygame.Color("white"))
-        message_play_again = play_again_font.render("Restart? Y / N", 1, pygame.Color("green"))
-        main_screen.blit(message, (320, 240))
-        main_screen.blit(message_play_again, (320 + 12, 240 + 40))
+        #message = self.game_over_font.render("Game Over", 1, pygame.Color("white"))
+        #message_play_again = self.play_again_font.render("Restart? Y / N", 1, pygame.Color("green"))
+        #self.main_screen.blit(message, (320, 240))
+        #self.main_screen.blit(message_play_again, (320 + 12, 240 + 40))
 
-        pygame.display.flip()
-        pygame.display.update()
+        #pygame.display.flip()
+        #pygame.display.update()
 
-        my_key = self.wait_for_action()
-        print("MY KEY GOT IS: {0}".format(my_key))
-        while my_key != KEY["EXIT"]:
-            if my_key == KEY["YES"]:
-                print("RUNNING GAME!!!!!!")
-                self.run_game()
-            elif my_key == KEY["NO"]:
-                break
-            my_key = self.wait_for_action()
+#        my_key = self.wait_for_action()
+
+
+#        print("MY KEY GOT IS: {0}".format(my_key))
+        # tu trzeba zmienic bo nie chcemy takiego
+        #while my_key != KEY["EXIT"]:
+#            if my_key == KEY["YES"]:
+#                print("RUNNING GAME!!!!!!")
+#                self.rerun()
+#            elif my_key == KEY["NO"]:
+#                break
+            #my_key = self.wait_for_action()
         sys.exit()
 
     def draw_score(self):
-        score_area = score_area_font.render(str(self.score), 1, pygame.Color("white"))
-        main_screen.blit(score_msg, (SCREEN_WIDTH - score_msg_size[0] - 60, 10))
-        main_screen.blit(score_area, (SCREEN_WIDTH - 45, 10))
+        score_area = self.score_area_font.render(str(self.score), 1, pygame.Color("white"))
+        self.main_screen.blit(self.score_msg, (SCREEN_WIDTH - self.score_msg_size[0] - 60, 10))
+        self.main_screen.blit(score_area, (SCREEN_WIDTH - 45, 10))
 
     def redraw_game(self):
-        main_screen.fill(background_color)
+        self.main_screen.fill(self.background_color)
         if self.apple.exists:
-            self.apple.draw(main_screen)
-        self.main_snake.draw(main_screen)
+            self.apple.draw(self.main_screen, self.apple_image)
+        self.main_snake.draw(self.main_screen,self.snake_image)
         self.draw_score()
         pygame.display.flip()
         pygame.display.update()
@@ -271,41 +303,60 @@ class Game:
         self.main_snake.move()
         return self.last_info
 
-    def run_game(self):
-        self.__init__()
-        while self.running:
+    def run(self, action):
+        # Draw game
+        self.redraw_game()
 
-            # Draw game
+        # Check collisions (walls and self)
+        if self.main_snake.check_crash():
+            self.end_game()
+
+        # Check apple availability
+        self.grow_snake = False
+        if self.apple.exists:
+            if check_collision(self.main_snake.get_head(), self.apple):
+                self.grow_snake = True
+                self.apple.exists = False
+                self.score += 5
+                self.apple_eaten = True
+
+        # Spawn apple
+        if self.apple_eaten:
+            self.apple_eaten = False
+            self.apple = self.spawn_apple(self.main_snake)
+            print("Wow, you've eaten an apple! Next apple: ({0}, {1})".format(self.apple.x, self.apple.y))
             self.redraw_game()
 
-            # Check collisions (walls and self)
-            if self.main_snake.check_crash():
-                print("OH NO, COLLISION")
-                self.end_game()
+        # Wait for user input (here goes agent's move)
+        #self.main_snake.display_log()
+        print("Waiting for input...")
+        # Here agent is telling what to do
+        # get_order(random.randint(1,4),main_snake,apple)
+        self.get_action(action)
+        # Waits for our eyes
+        time.sleep(0.5)
+        key_pressed = self.wait_for_action()
+        if key_pressed == "exit":
+            self.running = False
 
-            # Check apple availability
-            self.grow_snake = False
-            if self.apple.exists:
-                if check_collision(self.main_snake.get_head(), self.apple):
-                    self.grow_snake = True
-                    self.apple.exists = False
-                    self.score += 5
-                    self.apple_eaten = True
+        # Move snake
+        if self.grow_snake:
+            self.main_snake.grow()
+        if key_pressed:
+            self.main_snake.set_direction(key_pressed)
+        self.main_snake.move()
+        return self.send_state()
 
-            # Spawn apple
-            if self.apple_eaten:
-                self.apple_eaten = False
-                self.apple = self.spawn_apple()
-                self.redraw_game()
+    def send_state(self):
+        # Should send double square = 18
+        # sends actual state in table of ints
+        # apple.x,apple.y, snake.direction, all snake.elements(x,y)
+        ret = [self.apple.x, self.apple.y, self.main_snake.direction]
+        for e in self.main_snake.elements:
+            ret.append(e.x)
+            ret.append(e.y)
+        return ret
 
-            # Wait for user input (here goes agent's move)
-            print("Waiting for action...")
-            action_key = random.randrange(4)+1
-            if ENABLE_KEYBOARD:
-                action_key = self.wait_for_action()
-            self.action(action_key)
-            self.last_info = self.get_info()
-            pygame.time.Clock().tick(1)
 
 
 if __name__ == "__main__":
