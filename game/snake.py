@@ -150,6 +150,7 @@ class Game:
         self.apple_image = pygame.transform.scale(pygame.image.load("D://studia//Projekty//ML//Snake_AI//game//apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
         self.snake_image = pygame.transform.scale(pygame.image.load("D://studia//Projekty//ML//Snake_AI//game//snake_box.jpg").convert_alpha(),
                                              (BLOCK_SIZE, BLOCK_SIZE))
+
     def get_info(self):
         closest_right = 1
         closest_left = 1
@@ -253,9 +254,10 @@ class Game:
         return Apple(x, y, True)
     def rerun(self):
         self.__init__()
-        self.run(random.randint(1,4))
     def end_game(self):
-        #message = self.game_over_font.render("Game Over", 1, pygame.Color("white"))
+        self.running = False
+        print("fses")
+#        message = self.game_over_font.render("Game Over", 1, pygame.Color("white"))
         #message_play_again = self.play_again_font.render("Restart? Y / N", 1, pygame.Color("green"))
         #self.main_screen.blit(message, (320, 240))
         #self.main_screen.blit(message_play_again, (320 + 12, 240 + 40))
@@ -275,7 +277,7 @@ class Game:
 #            elif my_key == KEY["NO"]:
 #                break
             #my_key = self.wait_for_action()
-        sys.exit()
+        #sys.exit()
 
     def draw_score(self):
         score_area = self.score_area_font.render(str(self.score), 1, pygame.Color("white"))

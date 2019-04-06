@@ -13,7 +13,6 @@ from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 
-
 def build_model(in_size, in_between, out_size):
     model = Sequential()
     model.add(Dense(in_between, activation="relu", input_shape=(in_size,)))
@@ -51,29 +50,9 @@ class Model:
         return false
 
 
-class Agent:
-
-    def __init__(self):
-        self.model = Model()
-
-    def get_action(self, state, reward):
-        return self.model.predict(state, reward)
-
-    def train(self):
-        self.model.train()
-
-
 def main():
-    run_agent = Agent()
-    game_count = 40
-    main_game = game.Game()
-    for x in range(game_count):
-        main_game.rerun()
-        state = main_game.send_state()
-        while main_game.running:
-            old_state = state
-            state = main_game.run(run_agent.get_action(old_state, reward))
-
-
+    model = Model(action_num=2, in_size=2)
+    X=[1,2]
+    model.
 if __name__ == '__main__':
     main()
