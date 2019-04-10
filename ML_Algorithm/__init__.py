@@ -37,7 +37,7 @@ class Model:
 
     # Predicts for a state from model
     # Returns prediction
-    def predict(self, state):
+    def predict(self, state, reward):
         #return self.model.predict(state)
         return random.randint(1,4)
     # Gets weights for model from file
@@ -64,7 +64,7 @@ class Agent:
 
 
 def main():
-    run_agent = Agent()
+    agent = Agent()
     game_count = 40
     main_game = game.Game()
     for x in range(game_count):
@@ -72,7 +72,8 @@ def main():
         state = main_game.send_state()
         while main_game.running:
             old_state = state
-            state = main_game.run(run_agent.get_action(old_state, reward))
+            reward=0
+            state = main_game.run(agent.get_action(old_state, reward))
 
 
 if __name__ == '__main__':
