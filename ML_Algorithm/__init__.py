@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append('D:\studia\Projekty\ML\Snake_AI')
+sys.path.append("..")
 
 # for snake(snaky)
 from game import snake as game

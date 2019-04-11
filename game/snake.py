@@ -1,3 +1,5 @@
+import sys
+import os
 import time
 
 import pygame
@@ -147,8 +149,8 @@ class Game:
         self.score_msg = self.score_font.render("Score:", 1, pygame.Color("white"))
         self.score_msg_size = self.score_font.size("Score")
         self.background_color = pygame.Color(100, 100, 100)
-        self.apple_image = pygame.transform.scale(pygame.image.load("D://studia//Projekty//ML//Snake_AI//game//apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
-        self.snake_image = pygame.transform.scale(pygame.image.load("D://studia//Projekty//ML//Snake_AI//game//snake_box.jpg").convert_alpha(),
+        self.apple_image = pygame.transform.scale(pygame.image.load(r"../game/apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
+        self.snake_image = pygame.transform.scale(pygame.image.load(r"../game/snake_box.jpg").convert_alpha(),
                                              (BLOCK_SIZE, BLOCK_SIZE))
 
     def get_info(self):
