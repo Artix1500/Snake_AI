@@ -149,8 +149,14 @@ class Game:
         self.score_msg = self.score_font.render("Score:", 1, pygame.Color("white"))
         self.score_msg_size = self.score_font.size("Score")
         self.background_color = pygame.Color(100, 100, 100)
-        self.apple_image = pygame.transform.scale(pygame.image.load(r"../game/apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
-        self.snake_image = pygame.transform.scale(pygame.image.load(r"../game/snake_box.jpg").convert_alpha(),
+
+        image_path = os.path.dirname(__file__)
+        print(image_path)
+        
+        
+
+        self.apple_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "apple.png")).convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
+        self.snake_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "snake_box.jpg")).convert_alpha(),
                                              (BLOCK_SIZE, BLOCK_SIZE))
 
     def get_info(self):
@@ -379,8 +385,10 @@ if __name__ == "__main__":
     score_msg = score_font.render("Score:", 1, pygame.Color("white"))
     score_msg_size = score_font.size("Score")
     background_color = pygame.Color(100, 100, 100)
-    apple_image = pygame.transform.scale(pygame.image.load("apple.png").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
-    snake_image = pygame.transform.scale(pygame.image.load("snake_box.jpg").convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
+    image_path = os.path.dirname(__file__)
+
+    apple_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "apple.png")).convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
+    snake_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "snake_box.jpg")).convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
 
     # Game initialization
     game = Game()

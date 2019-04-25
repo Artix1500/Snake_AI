@@ -1,6 +1,9 @@
 import sys
+import os
 
-sys.path.append("..")
+sys.path.append(os.getcwd())
+
+print(sys.path)
 
 # for snake(snaky)
 from game import snake as game
