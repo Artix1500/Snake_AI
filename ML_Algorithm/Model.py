@@ -11,9 +11,9 @@ class Model:
 
     def build_model(self, in_size, in_between, out_size):
         model = Sequential()
-        model.add(Dense(in_between, activation="relu", input_shape=(in_size,)))
-        model.add(Dense(in_between, activation="relu"))
-        model.add(Dense(out_size, activation="relu"))
+        #model.add(Dense(in_between, activation="relu", input_shape=(in_size,)))
+        #model.add(Dense(in_between, activation="relu"))
+        model.add(Dense(out_size, activation="relu", input_dim=in_size))
         return model
 
     def train(self, n=200, x=[], y=[]):
@@ -22,9 +22,9 @@ class Model:
 
     # Predicts for a state from model
     # Returns prediction
-    def predict(self, state, reward):
-        #return self.model.predict(state)
-        return random.randint(1,4)
+    def predict(self, input):
+        #return self.model.predict(input)
+        return 2
 
     # Gets weights for model from file
     # Returns true if success
