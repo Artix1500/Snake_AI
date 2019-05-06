@@ -9,8 +9,9 @@ class Agent:
 
     def get_action(self, state):
         output_state = np.asarray(state)
-        print(output_state)
-        return self.model.predict(output_state)
+        # reshape says that it is just one sample
+        # -1 means that it will fit the size to make it right
+        return self.model.predict(output_state.reshape(1, -1))
 
     def train(self):
         self.model.train()

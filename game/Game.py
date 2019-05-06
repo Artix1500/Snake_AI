@@ -5,7 +5,7 @@ import os
 
 from game.Apple import Apple
 from game.Segment import Segment 
-from game.Snake import Snake
+from game.snake import Snake
 from game.Variables import *
 
 class Game:
