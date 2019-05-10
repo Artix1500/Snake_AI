@@ -2,6 +2,7 @@ import pygame
 import random
 import time
 import os
+import sys
 
 from game.Apple import Apple
 from game.Segment import Segment 
@@ -199,7 +200,7 @@ class Game:
 
         # Wait for user input (here goes agent's move)
         #self.main_snake.display_log()
-        print("Waiting for input...")
+        print("Waiting for action...")
         # Here agent is telling what to do
         # get_order(random.randint(1,4),main_snake,apple)
         self.get_action(action)
@@ -215,16 +216,75 @@ class Game:
         if key_pressed:
             self.main_snake.set_direction(key_pressed)
         self.main_snake.move()
-        return self.send_state()
 
+        state_reward = self.send_state()
+        state_reward.append(self.send_reward())
+        return state_reward
+
+    def send_reward(self):
+        return abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)*10
+
+    # Sends state to agent
+    # List of collisions (U, R, D L) and apple distances (U, R, D, L)
     def send_state(self):
-        # Should send double square = 18
-        # sends actual state in table of ints
-        # apple.x,apple.y, snake.direction, all snake.elements(x,y)
-        ret = [self.apple.x, self.apple.y, self.main_snake.direction]
-        for e in self.main_snake.elements:
-            ret.append(e.x)
-            ret.append(e.y)
-        return ret
+        collisions = self.check_collisions_all_directions()
+        apple_distance = self.check_apple_all_directions()
+        return collisions + apple_distance
 
+    def check_apple_all_directions(self):
+        distance = []
+
+        # UP
+        distance.append(abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y-1))
+
+        # RIGHT
+        distance.append(abs(self.apple.x - self.main_snake.get_head().x+1) + abs(self.apple.y - self.main_snake.get_head().y))
+        
+        # DOWN
+        distance.append(abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y+1))
+
+        # LEFT
+        distance.append(abs(self.apple.x - self.main_snake.get_head().x-1) + abs(self.apple.y - self.main_snake.get_head().y))
+
+        return distance
+
+    def check_collisions_all_directions(self):
+        collision = []
+
+        # UP
+        distance = self.main_snake.get_head().y
+        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y-1)
+        for segment in self.main_snake.elements:
+            if segment.x == new_head[0] and segment.y < self.main_snake.get_head().y:
+                distance = min(distance, abs(segment.y - new_head[1]))
+        collision.append(distance) 
+
+        # RIGHT
+        distance = BOARD_WIDTH - self.main_snake.get_head().x
+        new_head = (self.main_snake.get_head().x+1, self.main_snake.get_head().y)
+        for segment in self.main_snake.elements:
+            if segment.y == new_head[1] and segment.x > self.main_snake.get_head().x:
+                distance = min(distance, abs(new_head[0] - segment.x))  
+        collision.append(distance) 
+        
+        # DOWN
+        distance = BOARD_HEIGHT - self.main_snake.get_head().y
+        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y+1)
+        for segment in self.main_snake.elements:
+            if segment.x == new_head[0] and segment.y > self.main_snake.get_head().y:
+                distance = min(distance, abs(segment.y - new_head[1]))
+        collision.append(distance)
+
+        # LEFT
+        distance = self.main_snake.get_head().x
+        new_head = (self.main_snake.get_head().x-1, self.main_snake.get_head().y)
+        for segment in self.main_snake.elements:
+            if segment.y == new_head[1] and segment.x < self.main_snake.get_head().x:
+                distance = min(distance, abs(new_head[0] - segment.x))
+        collision.append(distance)
+
+        return collision
+
+        
+            
 
