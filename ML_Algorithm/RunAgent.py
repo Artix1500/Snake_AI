@@ -12,5 +12,7 @@ def RunAgent():
         while main_game.running:
             state = next_state
             (next_state, reward)  = main_game.run(agent.get_action(state, reward))
+            if not main_game.running:
+                agent.get_action(next_state, reward, game_over = True)
 
 RunAgent()
