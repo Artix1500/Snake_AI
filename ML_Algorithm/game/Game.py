@@ -217,9 +217,7 @@ class Game:
             self.main_snake.set_direction(key_pressed)
         self.main_snake.move()
 
-        state_reward = self.send_state()
-        state_reward.append(self.send_reward())
-        return state_reward
+        return (self.send_state(), self.send_reward()) 
 
     def send_reward(self):
         return abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)*10

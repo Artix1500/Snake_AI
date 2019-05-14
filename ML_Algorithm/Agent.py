@@ -1,34 +1,30 @@
 import numpy as np
 import random
+from collections import deque
 
 from Model import Model
 
 
 class Agent:
 
-    def __init__(self,
-                 epsilon=1,
-                 epsilon_rate=0.97):
-
-        self.epsilon = epsilon
-        self.epsilon_rate = epsilon_rate
-        self.min_epsilon = 0.2
+    def __init__(self): 
         self.model = Model()
-
-    def get_action(self, state):
-        output_state = np.asarray(state)
-        q_values = self.model.predict(output_state.reshape(1, -1))
-
-        if (random.random() < self.epsilon):
-            return random.randint(1, 4)
-        else:
-            return q_values
+        self.previous_state = None
+        self.previous_action = None
+        self.state_list = deque(maxlen=10000)
+        self.predict_counter = 0
+        
+    def get_action(self, state, previous_reward):
+        # reshape says that it is just one sample
+        # -1 means that it will fit the size to make it right
+        self.predict_counter += 1
+        output_state = np.asarray(state).reshape(1, -1)
+        if self.previous_state is not None:
+            self.state_list.append((self.previous_state, previous_reward, self.previous_action))
+        self.previous_state = output_state
+        self.previous_action = self.model.predict(output_state)
+        return self.previous_action
 
     def train(self):
         self.model.train()
-        self.decreaseEpsilon()
-
-    def decreaseEpsilon(self):
-        self.epsilon = self.epsilon * self.epsilon_rate
-        if self.epsilon < self.min_epsilon:
-            self.epsilon = self.min_epsilon
+        self.model.decreaseEpsilon()
