@@ -41,10 +41,12 @@ class Model:
 
     # Gets weights for model from file
     # Returns true if success
-    def load_model(self):
-        return False
+    def load_model(self, filename=None):
+        f = ('model.h5' if filename is None else filename)
+        self.model.save_weights(f)
 
     # Saves weights of trained model to file->path is path to that file
     # Returns true if success
     def save_model(self, path):
-        return False
+        self.model.load_weights(path)
+
