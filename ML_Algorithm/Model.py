@@ -40,8 +40,12 @@ class Model:
                 Q_old = data_piece[3]
                 Q_new=(1-alpha)*Q_old + alpha*(reward+gamma*Q_predicted_max)
                 
-                data.piece[]
-        self.model.fit()
+                data.piece[3]=Q_new
+                y_train
+        self.model.fit(x_train,
+                        y_train,
+                           batch_size=len(batch),
+                           nb_epoch=1)
 
 
     # Predicts for a state from model
