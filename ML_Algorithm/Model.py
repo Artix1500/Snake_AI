@@ -5,13 +5,17 @@ from keras.layers import Dense
 
 class Model:
 
-    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.97):
+    # aplpha - learning rate
+    # gamma - how much it will want to have rewards
+    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.97, alpha=0.7, gamma=0.9):
         self.in_size = in_size
         self.out_size = action_num
         self.model = self.build_model(self.in_size, 4, self.out_size)
         self.epsilon = epsilon
         self.epsilon_rate = epsilon_rate
         self.min_epsilon = 0.2
+        self.alpha= alpha
+        self.gamma=gamma
 
     def build_model(self, in_size, in_between, out_size):
         model = Sequential()
@@ -20,9 +24,25 @@ class Model:
         model.add(Dense(out_size, activation="relu"))
         return model
 
-    def train(self, n=200, x=[], y=[]):
-        for x in range(n):
-            self.model.train(x, y)
+    # Trains the model with q-learning algorythm
+    def train(self, batch):
+        x_train = []
+        y_train = []
+            for data_piece in batch:
+                # get state from data_piece as the input
+                state=data_piece[0]
+                x_train.append(state)
+                # get the reward
+                reward = data_piece[1]
+                # get max predicted
+                Q_predicted_max = np.max(self.predict(state))
+                # Count the new Q
+                Q_old = data_piece[3]
+                Q_new=(1-alpha)*Q_old + alpha*(reward+gamma*Q_predicted_max)
+                
+                data.piece[]
+        self.model.fit()
+
 
     # Predicts for a state from model
     # Returns prediction
