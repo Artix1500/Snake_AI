@@ -220,7 +220,10 @@ class Game:
         return (self.send_state(), self.send_reward()) 
 
     def send_reward(self):
-        return abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)*10
+        if(self.running == False):
+            return REWARD["DEATH"]
+        apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)
+        return REWARD["LIVE"] + REWARD["EAT"]/apple_distance
 
     # Sends state to agent
     # List of collisions (U, R, D L) and apple distances (U, R, D, L)
