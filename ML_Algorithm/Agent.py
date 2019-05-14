@@ -3,11 +3,12 @@ import random
 
 from Model import Model
 
+
 class Agent:
 
     def __init__(self,
                  epsilon=1,
-                 epsilon_rate=0.99):
+                 epsilon_rate=0.97):
 
         self.epsilon = epsilon
         self.epsilon_rate = epsilon_rate
@@ -25,3 +26,9 @@ class Agent:
 
     def train(self):
         self.model.train()
+        self.decreaseEpsilon()
+
+    def decreaseEpsilon(self):
+        self.epsilon = self.epsilon * self.epsilon_rate
+        if self.epsilon < self.min_epsilon:
+            self.epsilon = self.min_epsilon
