@@ -9,7 +9,11 @@ BOARD_HEIGHT = SCREEN_HEIGHT // BLOCK_SIZE
 BOARD_WIDTH = SCREEN_WIDTH // BLOCK_SIZE
 KEY = {"UP": 1, "DOWN": 2, "LEFT": 3, "RIGHT": 4, "YES": 5, "NO": 6, "EXIT": 7}
 
+<<<<<<< HEAD
 REWARD = {"DEATH" : -10, "EAT" : 20, "LIVE" : 5}
+=======
+REWARD = {"DEATH" : -10, "EAT" : 20, "LIVE" : 1}
+>>>>>>> Changing Reward System
 
 def check_collision(pos1, pos2):
     if pos1.x * BLOCK_SIZE < (pos2.x + 1) * BLOCK_SIZE and (
