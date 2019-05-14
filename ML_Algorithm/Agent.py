@@ -18,6 +18,8 @@ class Agent:
         # reshape says that it is just one sample
         # -1 means that it will fit the size to make it right
         self.predict_counter += 1
+        if(self.predict_counter  % 1050 == 0):
+            self.train()
         output_state = np.asarray(state).reshape(1, -1)
         if self.previous_state is not None:
             self.state_list.append((self.previous_state, previous_reward, self.previous_action))
@@ -29,5 +31,6 @@ class Agent:
         return self.previous_action
 
     def train(self):
+        print("Training our model!!!!")
         self.model.train()
         self.model.decreaseEpsilon()
