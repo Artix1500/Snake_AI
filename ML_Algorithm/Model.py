@@ -5,7 +5,7 @@ from keras.layers import Dense
 
 class Model:
 
-    def __init__(self, action_num=4, in_size=11):
+    def __init__(self, action_num=4, in_size=9):
         self.in_size = in_size
         self.out_size = action_num
         self.model = self.build_model(self.in_size, 4, self.out_size)
