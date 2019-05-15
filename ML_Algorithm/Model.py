@@ -5,7 +5,7 @@ from keras.layers import Dense
 
 class Model:
 
-    # aplpha - learning rate
+    # aplpha - learning rate, probably wont be used
     # gamma - how much it will want to have rewards
     def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.97, alpha=0.7, gamma=0.9):
         self.in_size = in_size
