@@ -25,26 +25,37 @@ class Model:
         return model
 
     # Trains the model with q-learning algorythm
-    def train(self, batch):
+    # takes the minibatch(of size 32 preferably)
+    def train(self, minibatch):
         x_train = []
         y_train = []
-            for data_piece in batch:
-                # get state from data_piece as the input
-                state=data_piece[0]
-                x_train.append(state)
-                # get the reward
-                reward = data_piece[1]
-                # get max predicted
-                Q_predicted_max = np.max(self.predict(state))
-                # Count the new Q
-                Q_old = data_piece[3]
-                Q_new=(1-alpha)*Q_old + alpha*(reward+gamma*Q_predicted_max)
+        for i in range(len(minibatch)):
+            data_piece=minibatch[i]
+            # get state from data_piece as the input
+            state=data_piece[0]
+            x_train.append(state)
+            # get the reward
+            reward = data_piece[1]
+            # get the action
+            action = data_piece[2]
+            #not in the deque yet
+            state_new = data_piece[3]
+            done = data_piece[4]
+            # get max predicted
+            # THIS WONT WORK YET
+            Q_predicted_max = np.max(self.predict(state_new))
+            # y_train is now a vector of the size of outoput of network
+            y_train[i] = self.predict(state)
+            # only for the action chosen we change value (Bellman equation?)
+            if done:
+                y_train[i,action]=reward
+            else:
+                y_train[i,action]=reward+gamma*Q_predicted_max
                 
-                data.piece[3]=Q_new
-                y_train
+                
         self.model.fit(x_train,
                         y_train,
-                           batch_size=len(batch),
+                           batch_size=len(minibatch),
                            nb_epoch=1)
 
 

@@ -11,11 +11,10 @@ class Agent:
         self.model = Model()
         self.previous_state = None
         self.previous_action = None
-        # state, reward, action, first Q value
+        # state, reward, action
+        # should be state, reward, action, state_new, done
         self.state_list = deque(maxlen=10000)
         self.predict_counter = 0
-
-        self.Q_first_value= 0
 
         self.batch_size = 1024
         self.mini_batch_size = 32
@@ -28,7 +27,7 @@ class Agent:
             self.train()
         output_state = np.asarray(state).reshape(1, -1)
         if self.previous_state is not None:
-            self.state_list.append((self.previous_state, previous_reward, self.previous_action,self.Q_first_value))
+            self.state_list.append((self.previous_state, previous_reward, self.previous_action))
         if game_over:
             print ("Game over!")
             return
