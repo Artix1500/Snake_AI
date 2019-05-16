@@ -1,9 +1,8 @@
 from Agent import Agent
 from game.Game import Game
 
-def RunAgent():
+def RunAgent(game_count = 50):
     agent = Agent()
-    game_count = 50
     main_game = Game()
     for i in range(game_count):
         main_game.rerun()
@@ -15,4 +14,4 @@ def RunAgent():
             if not main_game.running:
                 agent.get_action(next_state, reward, game_over = True)
 
-RunAgent()
+RunAgent(game_count=1000000)

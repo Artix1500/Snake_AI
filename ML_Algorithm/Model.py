@@ -1,7 +1,9 @@
 import random
 from keras.models import Sequential
 from keras.layers import Dense
+import numpy as np
 
+from collections import deque
 
 class Model:
 
@@ -11,11 +13,16 @@ class Model:
         self.in_size = in_size
         self.out_size = action_num
         self.model = self.build_model(self.in_size, 4, self.out_size)
+        self.compileModel()
         self.epsilon = epsilon
         self.epsilon_rate = epsilon_rate
         self.min_epsilon = 0.2
         self.alpha= alpha
         self.gamma=gamma
+    
+    
+    def compileModel(self):
+        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     def build_model(self, in_size, in_between, out_size):
         model = Sequential()
@@ -27,47 +34,53 @@ class Model:
     # Trains the model with q-learning algorythm
     # takes the minibatch(of size 32 preferably)
     def train(self, minibatch):
+
+        print("starts minibatch training")
+        
         x_train = []
         y_train = []
+        
         for i in range(len(minibatch)):
+        
             data_piece=minibatch[i]
             # get state from data_piece as the input
-            state=data_piece[0]
+            state=data_piece["previous_state"]
             x_train.append(state)
             # get the reward
-            reward = data_piece[1]
+            reward = data_piece["reward"]
             # get the action
-            action = data_piece[2]
-            #not in the deque yet
-            state_new = data_piece[3]
-            done = data_piece[4]
-            # get max predicted
-            # THIS WONT WORK YET
-            Q_predicted_max = np.max(self.predict(state_new))
+            action = data_piece["action"]
+            # not in the deque yet
+            state_new = data_piece["next_state"]
+            done = data_piece["done"]
+            
             # y_train is now a vector of the size of outoput of network
-            y_train[i] = self.predict(state)
+            predicted=self.model.predict(state)[0]
+            y_train.append(predicted)
             # only for the action chosen we change value (Bellman equation?)
             if done:
-                y_train[i,action]=reward
+                y_train[i][action]=reward
             else:
-                y_train[i,action]=reward+gamma*Q_predicted_max
+                y_train[i][action]=reward+self.gamma*np.max(self.predict(state_new))
+        
+        x_train=np.asarray(x_train).reshape(len(minibatch), -1)
+        y_train=np.asarray(y_train).reshape(len(minibatch), -1)
                 
-                
+        print("fit")
         self.model.fit(x_train,
                         y_train,
                            batch_size=len(minibatch),
-                           nb_epoch=1)
-
+                           epochs=1)
+        print("end of minibatch training")
 
     # Predicts for a state from model
     # Returns prediction
     def predict(self, x):
         if (random.random() < self.epsilon):
-            return random.randint(1, 4)
+            return random.randint(0, 3)
         else:
             ret = self.model.predict(x)
-            # plus 1 because keys in dictionary are between 1 to 4
-            return (ret.argmax()) + 1
+            return (ret.argmax()) 
 
     def decreaseEpsilon(self):
         self.epsilon = self.epsilon * self.epsilon_rate
@@ -84,4 +97,3 @@ class Model:
     # Returns true if success
     def save_model(self, path):
         self.model.load_weights(path)
-

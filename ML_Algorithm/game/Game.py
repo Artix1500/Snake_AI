@@ -11,13 +11,16 @@ from game.Variables import *
 
 class Game:
     def __init__(self):
+        
+        self.iterations_count =0 
         self.score = 0
         self.main_snake = Snake(1, 1)
         self.apple_eaten = False
         self.apple = self.spawn_apple()
         self.running = True
-        self.last_info = self.get_info()
+        #self.last_info = self.get_info()
         self.grow_snake = False
+
 
         pygame.init()
         pygame.display.set_caption("Snake")
@@ -40,6 +43,8 @@ class Game:
         self.apple_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "apple.png")).convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
         self.snake_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "snake_box.jpg")).convert_alpha(),
                                              (BLOCK_SIZE, BLOCK_SIZE))
+
+
 
     def get_info(self):
         closest_right = 1
@@ -84,19 +89,21 @@ class Game:
             "reward": 0,
             "lost_game": False,
             "apple_x": apple_x_dist,
-            "apple_y": apple_y_dist
+            "apple_y": apple_y_dist,
+            "score": self.score,
+            "iterations_count": self.iterations_count
         }
 
         print("\nRight crash: {0}, left crash: {1}, up crash: {2}, "
               "down crash: {3}. Reward: {4}, lost game: {5}. Apple x: {6}, "
-              "apple y: {7}.".format(info["right_crash"], info["left_crash"], info["up_crash"],
+              "apple y: {7}, score: {8}, number of iterations {9}".format(info["right_crash"], info["left_crash"], info["up_crash"],
                                      info["down_crash"], info["reward"], info["lost_game"],
-                                     info["apple_x"], info["apple_y"]))
+                                     info["apple_x"], info["apple_y"], info["score"], info["iterations_count"]))
 
         return info
 
     def get_action(self, action):
-        # sending state to agent
+
         if action == KEY["UP"]:
             event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_UP)
         elif action == KEY["DOWN"]:
@@ -146,6 +153,7 @@ class Game:
     def rerun(self):
         self.__init__()
     def end_game(self):
+        self.get_info()
         self.running = False
 
     def draw_score(self):
@@ -200,12 +208,11 @@ class Game:
 
         # Wait for user input (here goes agent's move)
         #self.main_snake.display_log()
-        print("Waiting for action...")
+        self.iterations_count+=1
         # Here agent is telling what to do
-        # get_order(random.randint(1,4),main_snake,apple)
         self.get_action(action)
         # Waits for our eyes
-        time.sleep(0.5)
+        #time.sleep(0.5)
         key_pressed = self.wait_for_action()
         if key_pressed == "exit":
             self.running = False
@@ -216,13 +223,17 @@ class Game:
         if key_pressed:
             self.main_snake.set_direction(key_pressed)
         self.main_snake.move()
-
-        return (self.send_state(), self.send_reward()) 
+        reward=self.send_reward()
+        print(reward)
+        return (self.send_state(), reward) 
 
     def send_reward(self):
         if(self.running == False):
             return REWARD["DEATH"]
         apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)
+
+        if apple_distance == 0:
+            apple_distance = 1
         return REWARD["LIVE"] + REWARD["EAT"]/apple_distance
 
     # Sends state to agent
@@ -230,6 +241,9 @@ class Game:
     def send_state(self):
         collisions = self.check_collisions_all_directions()
         apple_distance = self.check_apple_all_directions()
+        if len(collisions) != 4 or len(apple_distance) != 4:
+            print(collisions)
+            print(apple_distance)
         return collisions + apple_distance
 
     def check_apple_all_directions(self):
