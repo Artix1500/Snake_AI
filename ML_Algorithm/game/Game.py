@@ -150,11 +150,16 @@ class Game:
                     break
 
         return Apple(x, y, True)
+
     def rerun(self):
         self.__init__()
+
     def end_game(self):
         self.get_info()
         self.running = False
+
+    def get_snake_size(self):
+        return len(self.main_snake.elements)
 
     def draw_score(self):
         score_area = self.score_area_font.render(str(self.score), 1, pygame.Color("white"))
