@@ -11,7 +11,6 @@ from game.Variables import *
 
 class Game:
     def __init__(self):
-        
         self.iterations_count =0 
         self.score = 0
         self.main_snake = Snake(1, 1)
@@ -25,6 +24,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption("Snake")
         pygame.font.init()
+        pygame.display.iconify()
         random.seed()
         self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
         self.score_font = pygame.font.Font(None, 25)
