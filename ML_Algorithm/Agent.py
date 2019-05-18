@@ -8,11 +8,13 @@ from Model import Model
 class Agent:
 
     def __init__(self, playWithoutTrainingCount=1050): 
+        
+        # you can add path to save the model here
         self.model = Model()
+
         self.previous_state = None
         self.previous_action = None
 
-        # state, reward, action, state_new, done
         self.state_list = deque(maxlen=10000)
         self.predict_counter = 0
 

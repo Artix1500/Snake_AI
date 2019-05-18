@@ -2,14 +2,15 @@ import random
 from keras.models import Sequential
 from keras.layers import Dense
 import numpy as np
+import os
 
 from collections import deque
 
 class Model:
 
-    # aplpha - learning rate, probably wont be used
+    # aplpha - learning rate, is not used 
     # gamma - how much it will want to have rewards
-    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.97, alpha=0.7, gamma=0.9):
+    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.97, gamma=0.9, path_saved_weights='model.h5'):
         self.in_size = in_size
         self.out_size = action_num
         self.model = self.build_model(self.in_size, 4, self.out_size)
@@ -17,8 +18,11 @@ class Model:
         self.epsilon = epsilon
         self.epsilon_rate = epsilon_rate
         self.min_epsilon = 0.2
-        self.alpha= alpha
         self.gamma=gamma
+
+        self.path_saved_weights = path_saved_weights
+        self.load_model(self.path_saved_weights)
+
     
     
     def compileModel(self):
@@ -55,13 +59,15 @@ class Model:
             done = data_piece["done"]
             
             # y_train is now a vector of the size of outoput of network
+            # OR  predicted=self.model.predict(state_new)[0] but with checking if it exists
+            # I think there should be predicted = [0,0,0,0]
             predicted=self.model.predict(state)[0]
             y_train.append(predicted)
             # only for the action chosen we change value (Bellman equation?)
             if done:
                 y_train[i][action]=reward
             else:
-                y_train[i][action]=reward+self.gamma*np.max(self.predict(state_new))
+                y_train[i][action]=reward+self.gamma*np.max(self.model.predict(state_new))
         
         x_train=np.asarray(x_train).reshape(len(minibatch), -1)
         y_train=np.asarray(y_train).reshape(len(minibatch), -1)
@@ -73,6 +79,7 @@ class Model:
                            epochs=1)
         print("end of minibatch training")
 
+        self.save_model(self.path_saved_weights)
     # Predicts for a state from model
     # Returns prediction
     def predict(self, x):
@@ -89,11 +96,15 @@ class Model:
 
     # Gets weights for model from file
     # Returns true if success
-    def load_model(self, filename=None):
-        f = ('model.h5' if filename is None else filename)
-        self.model.save_weights(f)
+    def load_model(self, filename):
+
+        exists = os.path.isfile(filename)
+        if exists:
+            print("loading model")
+            self.model.load_weights(filename)
 
     # Saves weights of trained model to file->path is path to that file
     # Returns true if success
-    def save_model(self, path):
-        self.model.load_weights(path)
+    def save_model(self, filename='model.h5'):
+        print("saving model")
+        self.model.save_weights(filename)
