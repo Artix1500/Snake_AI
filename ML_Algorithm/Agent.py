@@ -38,7 +38,6 @@ class Agent:
             # if game has ended the next_state is None
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, None, game_over)
             self.mini_batch_size= min(32, max(1,(int)(self.batch_size/4)))
-            #print(self.batch_size)
             self.train()
             self.mini_batch_size=0
             self.batch_size=0
@@ -63,9 +62,6 @@ class Agent:
     def train(self):
         if self.batch_size>2:
             batch = self.get_batch()
-            print("batch size {0}", self.batch_size)
-            print("minibatch size {0}", self.mini_batch_size)
-            print("int batchsize/minibatchsize {0}", (int)(self.batch_size/self.mini_batch_size))
             for i in range((int)(self.batch_size/self.mini_batch_size)):
                self.model.train(batch[i*self.mini_batch_size:(i+1)*self.mini_batch_size])
             self.model.decreaseEpsilon()
