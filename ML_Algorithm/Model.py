@@ -87,6 +87,8 @@ class Model:
             return random.randint(0, 3)
         else:
             ret = self.model.predict(x)
+            print("predicted: ")
+            print(ret)
             return (ret.argmax()) 
 
     def decreaseEpsilon(self):

@@ -18,25 +18,30 @@ class Agent:
         self.state_list = deque(maxlen=10000)
         self.predict_counter = 0
 
-        self.batch_size = 1024
-        self.mini_batch_size = 32
+        self.batch_size = 0
+        self.mini_batch_size = 0
 
         self.playWithoutTrainingCount = playWithoutTrainingCount
 
-        
+    
 
     def get_action(self, state, previous_reward, game_over=False):
-        # reshape says that it is just one sample
-        # -1 means that it will fit the size to make it right
         self.predict_counter += 1
-        if(self.predict_counter  % self.playWithoutTrainingCount == 0):
-            self.train()
+
+        self.batch_size+=1
+        #if(self.predict_counter  % self.playWithoutTrainingCount == 0):
+        #    self.train()
         if self.previous_state is not None:
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, state, game_over)
         if game_over:
             print ("Game over!")
             # if game has ended the next_state is None
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, None, game_over)
+            self.mini_batch_size= min(32, max(1,(int)(self.batch_size/4)))
+            #print(self.batch_size)
+            self.train()
+            self.mini_batch_size=0
+            self.batch_size=0
             return
         
         # state in next iteration becomes previous_state
@@ -56,7 +61,11 @@ class Agent:
         return random.sample(list(self.state_list), self.batch_size)
 
     def train(self):
-        batch = self.get_batch()
-        for i in range((int)(self.batch_size/self.mini_batch_size)):
-            self.model.train(batch[i*self.mini_batch_size:(i+1)*self.mini_batch_size])
-        self.model.decreaseEpsilon()
+        if self.batch_size>2:
+            batch = self.get_batch()
+            print("batch size {0}", self.batch_size)
+            print("minibatch size {0}", self.mini_batch_size)
+            print("int batchsize/minibatchsize {0}", (int)(self.batch_size/self.mini_batch_size))
+            for i in range((int)(self.batch_size/self.mini_batch_size)):
+               self.model.train(batch[i*self.mini_batch_size:(i+1)*self.mini_batch_size])
+            self.model.decreaseEpsilon()
