@@ -47,6 +47,9 @@ class Agent:
         self.previous_state = state
         # get the move prediction from state
         self.previous_action = self.model.predict(np.asarray(state).reshape(1, -1))
+
+        self.simple_train(2)
+
         return self.previous_action
 
     def add_to_state_list(self, previous_state, previous_reward, previous_action, state_new, done):
@@ -58,10 +61,19 @@ class Agent:
 
     def get_batch(self):
         return random.sample(list(self.state_list), self.batch_size)
+    
+    def get_batch_with_size(self, size):
+        return random.sample(list(self.state_list),min(size,len(self.state_list)))
+
+    def simple_train(self, count):
+        if(len(self.state_list) >= count): 
+            self.model.train(self.get_batch_with_size(count))
 
     def train(self):
         if self.batch_size>2:
             batch = self.get_batch()
             for i in range((int)(self.batch_size/self.mini_batch_size)):
                self.model.train(batch[i*self.mini_batch_size:(i+1)*self.mini_batch_size])
+            
             self.model.decreaseEpsilon()
+            print('Decreasing epsilon. Current is: ', self.model.epsilon)
