@@ -30,7 +30,7 @@ class Snake:
         else:
             last_segment = self.elements.pop(last_element)
 
-        last_segment.direction = self.elements[0].direction
+        last_segment.direction = self.direction
 
         if self.elements[0].direction == KEY["UP"]:
             last_segment.y = self.elements[0].y - 1
@@ -60,7 +60,7 @@ class Snake:
 
         self.elements.append(new_segment)
 
-    def set_direction(self, direction):
+    def set_direction(self, direction): 
         self.direction = direction
 
     def check_crash(self):

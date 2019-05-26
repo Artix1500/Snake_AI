@@ -9,6 +9,8 @@ from game.Segment import Segment
 from game.snake import Snake
 from game.Variables import *
 
+DISPLAY = True
+
 class Game:
     def __init__(self):
         self.iterations_count =0 
@@ -24,7 +26,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption("Snake")
         pygame.font.init()
-        pygame.display.iconify()
+        # pygame.display.iconify()
         random.seed()
         self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
         self.score_font = pygame.font.Font(None, 25)
@@ -102,7 +104,6 @@ class Game:
         return info
 
     def get_action(self, action):
-
         if action == KEY["UP"]:
             event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_UP)
         elif action == KEY["DOWN"]:
@@ -171,8 +172,9 @@ class Game:
             self.apple.draw(self.main_screen, self.apple_image)
         self.main_snake.draw(self.main_screen,self.snake_image)
         self.draw_score()
-        pygame.display.flip()
-        pygame.display.update()
+        if DISPLAY:
+            pygame.display.flip()
+            pygame.display.update()
 
     def action(self, action_key):
         if action_key == KEY["EXIT"]:
@@ -189,6 +191,7 @@ class Game:
     def run(self, action):
         # Draw game
         self.redraw_game() 
+        # print(self.send_state(), action)
 
         # Check apple availability
         self.grow_snake = False
@@ -210,17 +213,21 @@ class Game:
         #self.main_snake.display_log()
         self.iterations_count+=1
         # Here agent is telling what to do
+        
+        # time.sleep(0.5)
         self.get_action(action)
         # Waits for our eyes
-        #time.sleep(0.5)
         key_pressed = self.wait_for_action()
         if key_pressed == "exit":
             self.running = False
 
+        if(key_pressed != action):
+            print("error when getting key presed", key_pressed, action)
+
         # Move snake
         if self.grow_snake:
             self.main_snake.grow()
-        if key_pressed:
+        if key_pressed in range(0, 4):
             self.main_snake.set_direction(key_pressed)
         self.main_snake.move()
 
@@ -277,7 +284,10 @@ class Game:
         # UP
         distance = self.main_snake.get_head().y
         new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y-1)
-        for segment in self.main_snake.elements:
+
+        snake_elements_without_tail = self.main_snake.elements[:-1]
+
+        for segment in snake_elements_without_tail:
             if segment.x == new_head[0] and segment.y < self.main_snake.get_head().y:
                 distance = min(distance, abs(segment.y - new_head[1]))
         collision.append(distance) 
@@ -287,7 +297,7 @@ class Game:
         # DOWN
         distance = BOARD_HEIGHT - self.main_snake.get_head().y
         new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y+1)
-        for segment in self.main_snake.elements:
+        for segment in snake_elements_without_tail:
             if segment.x == new_head[0] and segment.y > self.main_snake.get_head().y:
                 distance = min(distance, abs(segment.y - new_head[1]))
         collision.append(distance)
@@ -295,7 +305,7 @@ class Game:
         # LEFT
         distance = self.main_snake.get_head().x
         new_head = (self.main_snake.get_head().x-1, self.main_snake.get_head().y)
-        for segment in self.main_snake.elements:
+        for segment in snake_elements_without_tail:
             if segment.y == new_head[1] and segment.x < self.main_snake.get_head().x:
                 distance = min(distance, abs(new_head[0] - segment.x))
         collision.append(distance)
@@ -303,7 +313,7 @@ class Game:
         # RIGHT
         distance = BOARD_WIDTH - self.main_snake.get_head().x
         new_head = (self.main_snake.get_head().x+1, self.main_snake.get_head().y)
-        for segment in self.main_snake.elements:
+        for segment in snake_elements_without_tail:
             if segment.y == new_head[1] and segment.x > self.main_snake.get_head().x:
                 distance = min(distance, abs(new_head[0] - segment.x))  
         collision.append(distance) 

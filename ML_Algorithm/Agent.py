@@ -34,8 +34,9 @@ class Agent:
         if self.previous_state is not None:
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, state, game_over)
         if game_over:
-            print ("Game over!")
+            print ("Game over! State and action made:")
             # if game has ended the next_state is None
+            print(self.previous_state, self.previous_action)
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, None, game_over)
             self.mini_batch_size= min(32, max(1,(int)(self.batch_size/4)))
             self.train()
@@ -65,7 +66,7 @@ class Agent:
     def get_batch_with_size(self, size):
         return random.sample(list(self.state_list),min(size,len(self.state_list)))
 
-    def simple_train(self, count):
+    def simple_train(self, count): 
         if(len(self.state_list) >= count): 
             self.model.train(self.get_batch_with_size(count))
 

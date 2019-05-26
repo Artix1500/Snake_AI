@@ -10,7 +10,7 @@ class Model:
 
     # aplpha - learning rate, is not used 
     # gamma - how much it will want to have rewards
-    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.9994, gamma=0.9, path_saved_weights='model.h5'):
+    def __init__(self, action_num=4, in_size=8, epsilon=0,epsilon_rate=0.9994, gamma=0.9, path_saved_weights='model.h5'):
         self.in_size = in_size
         self.out_size = action_num
         self.model = self.build_model(self.in_size, 4, self.out_size)
@@ -73,15 +73,21 @@ class Model:
                 y_train[i][action]=reward
             else:
                 y_train[i][action]=reward+self.gamma*np.max(self.model.predict(state_new))
+            
         
         x_train=np.asarray(x_train).reshape(len(minibatch), -1)
         y_train=np.asarray(y_train).reshape(len(minibatch), -1)
-                 
+        # if(len(minibatch) <= 2):
+        #     print("-==-=--=-=-=-=--==-=-=-=-=-=-=-=-=-=-=-=-==")
+        #     print(x_train)
+        #     print(y_train)
         self.model.fit(x_train,
                         y_train,
                            batch_size=len(minibatch),
-                           epochs=1,
+                           epochs=10,
                            verbose=0)
+        # if(len(minibatch) <= 2):
+        #     print(self.model.predict(x_train))
         
         if(len(minibatch) > 2):
             self.save_model(self.path_saved_weights)
