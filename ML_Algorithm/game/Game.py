@@ -15,7 +15,8 @@ class Game:
     def __init__(self):
         self.iterations_count =0 
         self.score = 0
-        self.main_snake = Snake(1, 1)
+        #self.main_snake = Snake(14, 4 )
+        self.main_snake = Snake(random.randint(0,15), random.randint(0,8) )
         self.apple_eaten = False
         self.apple = self.spawn_apple()
         self.running = True
@@ -26,7 +27,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption("Snake")
         pygame.font.init()
-        # pygame.display.iconify()
+        #pygame.display.iconify()
         random.seed()
         self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
         self.score_font = pygame.font.Font(None, 25)
@@ -214,7 +215,7 @@ class Game:
         self.iterations_count+=1
         # Here agent is telling what to do
         
-        # time.sleep(0.5)
+        time.sleep(0.5)
         self.get_action(action)
         # Waits for our eyes
         key_pressed = self.wait_for_action()
@@ -240,9 +241,12 @@ class Game:
         return (self.send_state(), reward) 
 
     def send_reward(self):
+        reward = 0
         if self.running:
-            return 1
-        return -0.5
+            reward= REWARD["LIVE"]
+        else:
+            reward = REWARD["DEATH"]
+        return reward
         # if(self.running == False):
         #     return REWARD["DEATH"]
         # apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)
@@ -295,7 +299,7 @@ class Game:
       
         
         # DOWN
-        distance = BOARD_HEIGHT - self.main_snake.get_head().y
+        distance = BOARD_HEIGHT - self.main_snake.get_head().y -1
         new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y+1)
         for segment in snake_elements_without_tail:
             if segment.x == new_head[0] and segment.y > self.main_snake.get_head().y:
@@ -311,13 +315,14 @@ class Game:
         collision.append(distance)
 
         # RIGHT
-        distance = BOARD_WIDTH - self.main_snake.get_head().x
+        distance = BOARD_WIDTH - self.main_snake.get_head().x -1
         new_head = (self.main_snake.get_head().x+1, self.main_snake.get_head().y)
         for segment in snake_elements_without_tail:
             if segment.y == new_head[1] and segment.x > self.main_snake.get_head().x:
                 distance = min(distance, abs(new_head[0] - segment.x))  
         collision.append(distance) 
 
+        print(collision)
         return collision
 
         

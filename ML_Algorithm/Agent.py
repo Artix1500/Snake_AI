@@ -2,6 +2,7 @@ import numpy as np
 import random
 from collections import deque
 
+import time
 from Model import Model
 
 
@@ -27,21 +28,22 @@ class Agent:
 
     def get_action(self, state, previous_reward, game_over=False):
         self.predict_counter += 1
-
         self.batch_size+=1
         #if(self.predict_counter  % self.playWithoutTrainingCount == 0):
         #    self.train()
         if self.previous_state is not None:
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, state, game_over)
         if game_over:
-            print ("Game over! State and action made:")
+            print ("Game over! State and action  and reward made:")
             # if game has ended the next_state is None
-            print(self.previous_state, self.previous_action)
+            print(self.previous_state, self.previous_action, previous_reward)
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, None, game_over)
             self.mini_batch_size= min(32, max(1,(int)(self.batch_size/4)))
             self.train()
             self.mini_batch_size=0
             self.batch_size=0
+            self.previous_state=None
+            self.previous_action=None
             return
         
         # state in next iteration becomes previous_state
@@ -73,6 +75,7 @@ class Agent:
     def train(self):
         if self.batch_size>2:
             batch = self.get_batch()
+            #print(batch)
             for i in range((int)(self.batch_size/self.mini_batch_size)):
                self.model.train(batch[i*self.mini_batch_size:(i+1)*self.mini_batch_size])
             

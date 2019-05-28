@@ -1,6 +1,7 @@
 import random
 from keras.models import Sequential
 from keras.layers import Dense
+from keras import losses
 import numpy as np
 import os
 
@@ -13,11 +14,11 @@ class Model:
     def __init__(self, action_num=4, in_size=8, epsilon=0,epsilon_rate=0.9994, gamma=0.9, path_saved_weights='model.h5'):
         self.in_size = in_size
         self.out_size = action_num
-        self.model = self.build_model(self.in_size, 4, self.out_size)
+        self.model = self.build_model(self.in_size, 14, self.out_size)
         self.compileModel()
         self.epsilon = epsilon
         self.epsilon_rate = epsilon_rate
-        self.min_epsilon = 0.0
+        self.min_epsilon = 0
         self.gamma=gamma
 
         self.path_saved_weights = path_saved_weights
@@ -26,13 +27,13 @@ class Model:
     
     
     def compileModel(self):
-        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        self.model.compile(loss=losses.mean_squared_error, optimizer='adam', metrics=['accuracy'])
 
     def build_model(self, in_size, in_between, out_size):
         model = Sequential()
-        model.add(Dense(in_between, activation="relu", input_dim=in_size))
-        model.add(Dense(in_between, activation="relu"))
-        model.add(Dense(out_size, activation="relu"))
+        model.add(Dense(in_between, activation="sigmoid", input_dim=in_size))
+        model.add(Dense(in_between, activation="sigmoid"))
+        model.add(Dense(out_size, activation="softmax"))
         return model
 
     # Trains the model with q-learning algorythm
@@ -84,8 +85,8 @@ class Model:
         self.model.fit(x_train,
                         y_train,
                            batch_size=len(minibatch),
-                           epochs=10,
-                           verbose=0)
+                           epochs=1,
+                           verbose=2)
         # if(len(minibatch) <= 2):
         #     print(self.model.predict(x_train))
         
@@ -97,7 +98,7 @@ class Model:
         if (random.random() < self.epsilon):
             toRet = random.randint(0, 3)
             if(x[0][toRet] == 0): 
-                print('random Move')
+                print('random Move kills')
             return toRet
         else:
             ret = self.model.predict(x)
@@ -107,7 +108,7 @@ class Model:
             # print(ret) 
             toRet = ret.argmax()
             if(x[0][toRet] == 0): 
-                print('predicted Move')
+                print('predicted Move kills')
             return toRet 
 
     def decreaseEpsilon(self):
