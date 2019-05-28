@@ -1,3 +1,4 @@
+import random
 from game.Variables import *
 from game.Apple import Apple
 from game.Segment import Segment 
@@ -6,10 +7,11 @@ class Snake:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.direction = KEY["DOWN"]
+        #KEY["DOWN"]
+        self.direction = random.randint(0,3)
         self.elements = []
         head = Segment(self.x, self.y)
-        head.direction = KEY["DOWN"]
+        head.direction = self.direction
         self.elements.append(head)
         self.move()
         self.grow()
