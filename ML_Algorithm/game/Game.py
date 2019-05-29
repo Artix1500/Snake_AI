@@ -15,7 +15,7 @@ class Game:
     def __init__(self):
         self.iterations_count =0 
         self.score = 0
-        #self.main_snake = Snake(14, 4 )
+        #self.main_snake = Snake(4, 4 )
         self.main_snake = Snake(random.randint(0,15), random.randint(0,8) )
         self.apple_eaten = False
         self.apple = self.spawn_apple()

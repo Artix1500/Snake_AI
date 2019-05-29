@@ -36,7 +36,7 @@ class Agent:
         if game_over:
             print ("Game over! State and action  and reward made:")
             # if game has ended the next_state is None
-            print(self.previous_state, self.previous_action, previous_reward)
+            print(self.previous_state, previous_reward,self.previous_action, None, game_over)
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, None, game_over)
             self.mini_batch_size= min(32, max(1,(int)(self.batch_size/4)))
             self.train()
