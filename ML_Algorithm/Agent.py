@@ -45,7 +45,7 @@ class Agent:
             self.previous_state=None
             self.previous_action=None
             return
-        
+        print(self.previous_state, previous_reward,self.previous_action, state, game_over)
         # state in next iteration becomes previous_state
         self.previous_state = state
         # get the move prediction from state
