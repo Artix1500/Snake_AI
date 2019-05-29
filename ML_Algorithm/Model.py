@@ -12,14 +12,14 @@ class Model:
 
     # aplpha - learning rate, is not used 
     # gamma - how much it will want to have rewards
-    def __init__(self, action_num=4, in_size=8, epsilon=0,epsilon_rate=0.9994, gamma=0.2, path_saved_weights='model.h5'):
+    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.9994, gamma=0.2, path_saved_weights='model.h5'):
         self.in_size = in_size
         self.out_size = action_num
         self.model = self.build_model(self.in_size, 14, self.out_size)
         self.compileModel()
         self.epsilon = epsilon
         self.epsilon_rate = epsilon_rate
-        self.min_epsilon = 0
+        self.min_epsilon = 0.2
         self.gamma=gamma
 
         self.path_saved_weights = path_saved_weights

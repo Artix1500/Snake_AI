@@ -215,9 +215,9 @@ class Game:
         self.iterations_count+=1
         # Here agent is telling what to do
         
-        time.sleep(0.5)
-        self.get_action(action)
         # Waits for our eyes
+        #time.sleep(0.5)
+        self.get_action(action)
         key_pressed = self.wait_for_action()
         if key_pressed == "exit":
             self.running = False
@@ -241,19 +241,24 @@ class Game:
         return (self.send_state(), reward) 
 
     def send_reward(self):
-        reward = 0
-        if self.running:
-            reward= REWARD["LIVE"]
-        else:
-            reward = REWARD["DEATH"]
-        return reward
-        # if(self.running == False):
-        #     return REWARD["DEATH"]
+        # reward = 0
+        # apple_part =0
         # apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)
+        # if apple_distance==1:
+        #     apple_part= REWARD["EAT"]
+        # if self.running:
+        #     reward= REWARD["LIVE"] + apple_part
+        # else:
+        #     reward = REWARD["DEATH"]+ apple_part
+        # return reward
+        
+        if(self.running == False):
+             return REWARD["DEATH"]
+        apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)
 
-        # if apple_distance == 0:
-        #     apple_distance = 1
-        # return REWARD["LIVE"] + REWARD["EAT"]/apple_distance
+        if apple_distance == 0:
+             apple_distance = 1
+        return REWARD["LIVE"] + REWARD["EAT"]/apple_distance
 
     # Sends state to agent
     # List of collisions (U, R, D L) and apple distances (U, R, D, L)
@@ -266,21 +271,28 @@ class Game:
         return collisions + apple_distance
 
     def check_apple_all_directions(self):
-        distance = [0,0,0,0]
+        #distance = [0,0,0,0]
+        distance=[]
 
-        # # UP
-        # distance.append(abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y-1))
+        # UP
+        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x, self.apple.y, self.main_snake.get_head().y-1)
         
-        # # DOWN
-        # distance.append(abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y+1))
 
-        # # LEFT
-        # distance.append(abs(self.apple.x - self.main_snake.get_head().x-1) + abs(self.apple.y - self.main_snake.get_head().y))
+        # DOWN
+        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x, self.apple.y, self.main_snake.get_head().y+1)
 
-        # # RIGHT
-        # distance.append(abs(self.apple.x - self.main_snake.get_head().x+1) + abs(self.apple.y - self.main_snake.get_head().y))
+        # LEFT
+        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x-1, self.apple.y, self.main_snake.get_head().y)
+
+        # RIGHT
+        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x+1, self.apple.y, self.main_snake.get_head().y)
 
         return distance
+
+    def distance_calc(applex, appley, snakex, snakey):
+         return abs(applex - snakex) + abs(appley - snakey)
+
+
 
     def check_collisions_all_directions(self):
         collision = []

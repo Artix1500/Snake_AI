@@ -24,4 +24,4 @@ def RunAgent(game_count = 50):
                     spamwriter.writerow([str(i), str(main_game.get_snake_size()),str(main_game.iterations_count)])
                 agent.get_action(next_state, reward, game_over = True)
 
-RunAgent(game_count=10000)
+RunAgent(game_count=80000)
