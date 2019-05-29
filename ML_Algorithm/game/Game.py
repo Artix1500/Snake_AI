@@ -5,29 +5,29 @@ import os
 import sys
 
 from game.Apple import Apple
-from game.Segment import Segment 
+from game.Segment import Segment
 from game.snake import Snake
 from game.Variables import *
 
 DISPLAY = True
 
+
 class Game:
     def __init__(self):
-        self.iterations_count =0 
+        self.iterations_count = 0
         self.score = 0
-        #self.main_snake = Snake(4, 4 )
-        self.main_snake = Snake(random.randint(0,15), random.randint(0,8) )
+        # self.main_snake = Snake(4, 4 )
+        self.main_snake = Snake(random.randint(0, 15), random.randint(0, 8))
         self.apple_eaten = False
         self.apple = self.spawn_apple()
         self.running = True
-        #self.last_info = self.get_info()
+        # self.last_info = self.get_info()
         self.grow_snake = False
-
 
         pygame.init()
         pygame.display.set_caption("Snake")
         pygame.font.init()
-        #pygame.display.iconify()
+        # pygame.display.iconify()
         random.seed()
         self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
         self.score_font = pygame.font.Font(None, 25)
@@ -38,15 +38,13 @@ class Game:
         self.score_msg_size = self.score_font.size("Score")
         self.background_color = pygame.Color(100, 100, 100)
 
-        image_path = os.path.dirname(__file__) 
-        
-        
+        image_path = os.path.dirname(__file__)
 
-        self.apple_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "apple.png")).convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
-        self.snake_image = pygame.transform.scale(pygame.image.load(os.path.join(image_path, "snake_box.jpg")).convert_alpha(),
-                                             (BLOCK_SIZE, BLOCK_SIZE))
-
-
+        self.apple_image = pygame.transform.scale(
+            pygame.image.load(os.path.join(image_path, "apple.png")).convert_alpha(), (BLOCK_SIZE, BLOCK_SIZE))
+        self.snake_image = pygame.transform.scale(
+            pygame.image.load(os.path.join(image_path, "snake_box.jpg")).convert_alpha(),
+            (BLOCK_SIZE, BLOCK_SIZE))
 
     def get_info(self):
         closest_right = 1
@@ -98,9 +96,12 @@ class Game:
 
         print("\nRight crash: {0}, left crash: {1}, up crash: {2}, "
               "down crash: {3}. Reward: {4}, lost game: {5}. Apple x: {6}, "
-              "apple y: {7}, score: {8}, number of iterations {9}".format(info["right_crash"], info["left_crash"], info["up_crash"],
-                                     info["down_crash"], info["reward"], info["lost_game"],
-                                     info["apple_x"], info["apple_y"], info["score"], info["iterations_count"]))
+              "apple y: {7}, score: {8}, number of iterations {9}".format(info["right_crash"], info["left_crash"],
+                                                                          info["up_crash"],
+                                                                          info["down_crash"], info["reward"],
+                                                                          info["lost_game"],
+                                                                          info["apple_x"], info["apple_y"],
+                                                                          info["score"], info["iterations_count"]))
 
         return info
 
@@ -156,7 +157,7 @@ class Game:
         self.__init__()
 
     def end_game(self):
-        #self.get_info()
+        # self.get_info()
         self.running = False
 
     def get_snake_size(self):
@@ -171,7 +172,7 @@ class Game:
         self.main_screen.fill(self.background_color)
         if self.apple.exists:
             self.apple.draw(self.main_screen, self.apple_image)
-        self.main_snake.draw(self.main_screen,self.snake_image)
+        self.main_snake.draw(self.main_screen, self.snake_image)
         self.draw_score()
         if DISPLAY:
             pygame.display.flip()
@@ -191,7 +192,7 @@ class Game:
 
     def run(self, action):
         # Draw game
-        self.redraw_game() 
+        self.redraw_game()
         # print(self.send_state(), action)
 
         # Check apple availability
@@ -211,18 +212,18 @@ class Game:
             self.redraw_game()
 
         # Wait for user input (here goes agent's move)
-        #self.main_snake.display_log()
-        self.iterations_count+=1
+        # self.main_snake.display_log()
+        self.iterations_count += 1
         # Here agent is telling what to do
-        
+
         # Waits for our eyes
-        #time.sleep(0.5)
+        # time.sleep(0.5)
         self.get_action(action)
         key_pressed = self.wait_for_action()
         if key_pressed == "exit":
             self.running = False
 
-        if(key_pressed != action):
+        if (key_pressed != action):
             print("error when getting key presed", key_pressed, action)
 
         # Move snake
@@ -232,13 +233,12 @@ class Game:
             self.main_snake.set_direction(key_pressed)
         self.main_snake.move()
 
-
         # Check collisions (walls and self)
         if self.main_snake.check_crash():
             self.end_game()
 
-        reward=self.send_reward() 
-        return (self.send_state(), reward) 
+        reward = self.send_reward()
+        return (self.send_state(), reward)
 
     def send_reward(self):
         # reward = 0
@@ -251,14 +251,15 @@ class Game:
         # else:
         #     reward = REWARD["DEATH"]+ apple_part
         # return reward
-        
-        if(self.running == False):
-             return REWARD["DEATH"]
-        apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)
+
+        if (self.running == False):
+            return REWARD["DEATH"]
+        apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(
+            self.apple.y - self.main_snake.get_head().y)
 
         if apple_distance == 0:
-             apple_distance = 1
-        return REWARD["LIVE"] + REWARD["EAT"]/apple_distance
+            apple_distance = 1
+        return REWARD["LIVE"] + REWARD["EAT"] / apple_distance
 
     # Sends state to agent
     # List of collisions (U, R, D L) and apple distances (U, R, D, L)
@@ -271,48 +272,47 @@ class Game:
         return collisions + apple_distance
 
     def check_apple_all_directions(self):
-        #distance = [0,0,0,0]
-        distance=[]
+        # distance = [0,0,0,0]
+        distance = []
 
         # UP
-        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x, self.apple.y, self.main_snake.get_head().y-1)
-        
+        distance.append(self.distance_calc(self.apple.x, self.main_snake.get_head().x, self.apple.y,
+                                           self.main_snake.get_head().y - 1))
 
         # DOWN
-        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x, self.apple.y, self.main_snake.get_head().y+1)
+        distance.append(self.distance_calc(self.apple.x, self.main_snake.get_head().x, self.apple.y,
+                                           self.main_snake.get_head().y + 1))
 
         # LEFT
-        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x-1, self.apple.y, self.main_snake.get_head().y)
+        distance.append(self.distance_calc(self.apple.x, self.main_snake.get_head().x - 1, self.apple.y,
+                                           self.main_snake.get_head().y))
 
         # RIGHT
-        distance.append(distance_calc(self.apple.x, self.main_snake.get_head().x+1, self.apple.y, self.main_snake.get_head().y)
+        distance.append(self.distance_calc(self.apple.x, self.main_snake.get_head().x + 1, self.apple.y,
+                                           self.main_snake.get_head().y))
 
         return distance
 
-    def distance_calc(applex, appley, snakex, snakey):
-         return abs(applex - snakex) + abs(appley - snakey)
-
-
+    def distance_calc(self, applex, appley, snakex, snakey):
+        return abs(applex - snakex) + abs(appley - snakey)
 
     def check_collisions_all_directions(self):
         collision = []
 
         # UP
         distance = self.main_snake.get_head().y
-        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y-1)
+        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y - 1)
 
         snake_elements_without_tail = self.main_snake.elements[:-1]
 
         for segment in snake_elements_without_tail:
             if segment.x == new_head[0] and segment.y < self.main_snake.get_head().y:
                 distance = min(distance, abs(segment.y - new_head[1]))
-        collision.append(distance) 
+        collision.append(distance)
 
-      
-        
         # DOWN
-        distance = BOARD_HEIGHT - self.main_snake.get_head().y -1
-        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y+1)
+        distance = BOARD_HEIGHT - self.main_snake.get_head().y - 1
+        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y + 1)
         for segment in snake_elements_without_tail:
             if segment.x == new_head[0] and segment.y > self.main_snake.get_head().y:
                 distance = min(distance, abs(segment.y - new_head[1]))
@@ -320,23 +320,19 @@ class Game:
 
         # LEFT
         distance = self.main_snake.get_head().x
-        new_head = (self.main_snake.get_head().x-1, self.main_snake.get_head().y)
+        new_head = (self.main_snake.get_head().x - 1, self.main_snake.get_head().y)
         for segment in snake_elements_without_tail:
             if segment.y == new_head[1] and segment.x < self.main_snake.get_head().x:
                 distance = min(distance, abs(new_head[0] - segment.x))
         collision.append(distance)
 
         # RIGHT
-        distance = BOARD_WIDTH - self.main_snake.get_head().x -1
-        new_head = (self.main_snake.get_head().x+1, self.main_snake.get_head().y)
+        distance = BOARD_WIDTH - self.main_snake.get_head().x - 1
+        new_head = (self.main_snake.get_head().x + 1, self.main_snake.get_head().y)
         for segment in snake_elements_without_tail:
             if segment.y == new_head[1] and segment.x > self.main_snake.get_head().x:
-                distance = min(distance, abs(new_head[0] - segment.x))  
-        collision.append(distance) 
+                distance = min(distance, abs(new_head[0] - segment.x))
+        collision.append(distance)
 
         print(collision)
         return collision
-
-        
-            
-
