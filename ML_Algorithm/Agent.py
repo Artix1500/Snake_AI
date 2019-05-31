@@ -45,13 +45,13 @@ class Agent:
             self.previous_state=None
             self.previous_action=None
             return
-        print(self.previous_state, previous_reward,self.previous_action, state, game_over)
+        #print(self.previous_state, previous_reward,self.previous_action, state, game_over)
         # state in next iteration becomes previous_state
         self.previous_state = state
         # get the move prediction from state
         self.previous_action = self.model.predict(np.asarray(state).reshape(1, -1))
 
-        self.simple_train(2)
+        #self.simple_train(2)
 
         return self.previous_action
 
@@ -75,9 +75,8 @@ class Agent:
     def train(self):
         if self.batch_size>2:
             batch = self.get_batch()
-            #print(batch)
             for i in range((int)(self.batch_size/self.mini_batch_size)):
                self.model.train(batch[i*self.mini_batch_size:(i+1)*self.mini_batch_size])
-            
+            self.model.save_model(self.model.path_saved_weights)
             self.model.decreaseEpsilon()
             print('Decreasing epsilon. Current is: ', self.model.epsilon)
