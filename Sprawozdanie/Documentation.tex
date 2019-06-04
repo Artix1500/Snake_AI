@@ -40,7 +40,7 @@ Q : S \times A \rightarrow \rm I\!R
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[scale=0.4]{qlearn}
+	\includegraphics[scale=0.6]{qlearn}
 	\caption{Q function}
 	\label{fig:qlearn}
 \end{figure}
@@ -83,15 +83,16 @@ Q : S \times A \rightarrow \rm I\!R
 	\label{fig:snakeenv}
 \end{figure}
 
-\par As we can see we give the agent information in four directions. It is because the agent can only choose from four possible moves, top, down, left and right. The information is for every direction is the distance to the nearest collision and distance to the apple (the point). The distances were counted in multiple ways, because as it is obvious not all of them were equally good. The collision distances were always the same - how many moves in this direction snake needs to make to die, the apple distance though varied. We started from Euclidean distance to the apple from every 'next possible move' and finally based our model on a distance which gave zero when the apple was not in this direction at all and binary 0/1 when apple was in the direction given, with partial points in the range from 0 to 1 on apple being somewhere diagonally. So finally the state is counted in a given way:
+\par As we can see we give the agent information in four directions. It is because the agent can only choose from four possible moves, top, down, left and right. The information is for every direction is the distance to the nearest collision and distance to the apple (the point). The distances were counted in multiple ways, because as it is obvious not all of them were equally good. The collision distances were always the same - how many moves in this direction snake needs to make to die, the apple distance though varied. We started from Euclidean distance to the apple from every 'next possible move' and finally based our model on a distance which gave zero when the apple was not in this direction at all and binary 0/1 when apple was in the direction given, with partial points in the range from 0 to 1 on apple being somewhere diagonally. So finally the state is counted in a given way presented with a simple algorithm \ref{state}:
 
-\begin{algorithm}
-	\caption{Count state}\label{euclid}
+
+\begin{algorithm}	
+	\caption{Count state}\label{euclid}	
 	\begin{algorithmic}[1]
 		\Procedure{CountState}{}
 		\State $\textit{applePos} \gets \text{position of the }\textit{apple}$
 		\State $\textit{snakePos} \gets \text{position of }\textit{head}$
-      	\For{\texttt{d in directions}}
+		\For{\texttt{d in directions}}
 		\State $\textit{collisionD} \gets \text{Nearest Wall/Snake in this direction}$
 		\EndFor
 		\For{\texttt{d in directions}}
@@ -114,5 +115,53 @@ Q : S \times A \rightarrow \rm I\!R
 \par On Game Over the environment is reset to the starting state which is having the snake of length four, facing the bottom direction with an apple in a random spot of the board. The neural network is preserved with every iteration and the information is later used for training.
 
 \subsection{Training}
+
+\par Apart from iterative information collection, it is important to train the agent, based on its previous experiences. Our training at first was done every thousand game, but we figured out that the results were not too good, so the final training is done after every game.
+
+\par Training is based on a list of samples collected from the agent previous actions and given rewards. One record in a training list is a tuple: 
+
+\begin{equation}
+QRecord = (Previous State, Reward, Action, Next State, Game Over)
+\end{equation}
+
+\par The relation between the \textit{Previous State} and the \textit{Next State} is that between them the the agent chose to perform \textit{Action}. \textit{Reward} is given to us by the network and \textit{Game Over} component is telling us if after the \text{Action} the game has ended. In this sense \textit{Game Over} is an additional element helping the agent understand the environment and the rules of the game. 
+
+\par Having the \textit{Game Over} information for a recoed we do not use the full formula, this is the Q equation to count the training output, because it involves predicting the next state, next state in case of game being over is None or a new game, so we just input the reward given by the network.
+
+\par During every game information from every move is collected to the list of previous actions, and then the batch is chosen for training, being split into mini batches, so that every training session would be split into separate smaller trainings. Every smaller training is based on inputting the collected mini batch into the neural network. 
+
+\par So our training is flexible in a sense that it can be done in many stages of the learning process. The training still does not break the no-teacher policy, because the agent is only tweaking the model based on previous experiences. It is important for a programmer to change the frequency and locations of the trainings because it can greatly affect the results. 
+
+\newpage
+
+\par Our training is working in a very simple way which is presented in a algorithm \ref{train} below:
+
+\begin{algorithm}
+	\caption{Train model}\label{train}
+	\begin{algorithmic}
+		\Procedure{Train model}{}
+		\State  $\textit{n} \gets \text{(0, 10)}$
+		\State $\textit{batchSize} \gets \text{random size in (0, len(} \textit{ExperienceList} \text{)}$	
+		\State $\textit{miniBatchSize} \gets \text{batchSize/n}$
+		\For{\texttt{miniBatch} \textbf{in} \texttt{batch}}
+		\For{\texttt{elem} \textbf{in} \texttt{miniBatch}}
+		\State $\text{add }\textit{elem.PreviousState} \text{ to } \textit{trainInput}$
+		\If {$\textit{elem.GameOver == True}$}
+		\State $\text{add }\textit{elem.Reward} \text{ to } \textit{trainOutput}$
+		\Else
+		\State $\text{add } \textit{(1 - gamma) * elem.Reward + gamma *} \newline \text{ model.predict(} \textit{elem.NextState} \text{) to } \textit{trainOutput}$
+		\EndIf
+		\EndFor
+		\EndFor
+		\State $\textit{model.train} \text{ with} \textit{train.Input, train.Output}$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
  
+\par As we have learned there are numerous training practises and the variation of this one if so far the most common we have encountered. In any case of data-overflow we have easy mechanisms to cut the great explosion of filling up the memory with cutting the maximal length of the Q records list. This is a good safety mechanism, we need to remember that data collected later on is usually way more valuable than data collected on the beginning, when the model is not trained almost at all.
+
+\par Having that in mind we have also created a way to input and output our model into a \textit{.csv} file. Thanks to this practise we can train our model partially, save data to file, and keep training it later on. Also we can compare models trained with different approaches, with various ways of counting the state (distance to the apple) and various training methods. 
+
+\par As a good practice in Machine Learning we also put something called \textit{Epsilon} which is a percentage with which random moves are chosen instead of predicting rewards from our neural network. This enables the model to explore new paths, and prevents from falling into a local maximum. As the model is getting better in predicting the correct moves, the \textit{Epsilon} is decreasing, in our case we decrease it by every thousand games. 
+
 \end{document}
