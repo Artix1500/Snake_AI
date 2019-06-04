@@ -28,7 +28,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption("Snake")
         pygame.font.init()
-        # pygame.display.iconify()
+        pygame.display.iconify()
         random.seed()
         self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
         self.score_font = pygame.font.Font(None, 25)
@@ -287,11 +287,19 @@ class Game:
     def check_apple_all_directions(self):
         # distance = [0,0,0,0]
         distance = []
+<<<<<<< HEAD
 
         # snake is eating the apple now  => no reward for that
         if self.snake_eating():
             return [0,0,0,0]
 
+=======
+
+        # snake is eating the apple now  => no reward for that
+        if self.snake_eating():
+            return [0,0,0,0]
+
+>>>>>>> 3ee493213fd6e1d378f8db495b063fe7a53a440c
         # UP
         distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y-1))
         
