@@ -87,13 +87,13 @@ Q : S \times A \rightarrow \rm I\!R
 
 
 \begin{algorithm}	
-	\caption{Count state}\label{euclid}	
+	\caption{Count state}\label{state}	
 	\begin{algorithmic}[1]
 		\Procedure{CountState}{}
 		\State $\textit{applePos} \gets \text{position of the }\textit{apple}$
 		\State $\textit{snakePos} \gets \text{position of }\textit{head}$
 		\For{\texttt{d in directions}}
-		\State $\textit{collisionD} \gets \text{Nearest Wall/Snake in this direction}$
+		\State $\textit{collisionD} \gets \text{distance to the nearest Wall/Snake in this direction}$
 		\EndFor
 		\For{\texttt{d in directions}}
 		\If {$\textit{apple} \text{ is in}\textit{ d}$}
@@ -116,7 +116,7 @@ Q : S \times A \rightarrow \rm I\!R
 
 \subsection{Training}
 
-\par Apart from iterative information collection, it is important to train the agent, based on its previous experiences. Our training at first was done every thousand game, but we figured out that the results were not too good, so the final training is done after every game.
+\par Apart from iterative information collection, it is important to train the agent, based on its previous experiences. Our training at first was done every thousand game, but we figured out that the results were not too good, so the final training is done after every game. And it last the length of the game.
 
 \par Training is based on a list of samples collected from the agent previous actions and given rewards. One record in a training list is a tuple: 
 
@@ -124,9 +124,9 @@ Q : S \times A \rightarrow \rm I\!R
 QRecord = (Previous State, Reward, Action, Next State, Game Over)
 \end{equation}
 
-\par The relation between the \textit{Previous State} and the \textit{Next State} is that between them the the agent chose to perform \textit{Action}. \textit{Reward} is given to us by the network and \textit{Game Over} component is telling us if after the \text{Action} the game has ended. In this sense \textit{Game Over} is an additional element helping the agent understand the environment and the rules of the game. 
+\par The relation between the \textit{Previous State} and the \textit{Next State} is that between them the agent chose to perform \textit{Action}. \textit{Reward} is given to us by the environment and \textit{Game Over} component is telling us if after the \text{Action} the game has ended. In this sense \textit{Game Over} is an additional element helping the agent understand the environment and the rules of the game. 
 
-\par Having the \textit{Game Over} information for a recoed we do not use the full formula, this is the Q equation to count the training output, because it involves predicting the next state, next state in case of game being over is None or a new game, so we just input the reward given by the network.
+\par Having the \textit{Game Over} information for a record we do not use the full formula, this is the Q equation to count the training output, because it involves predicting the next state, next state in case of game being over is None or a new game, so we just input the reward given by the network.
 
 \par During every game information from every move is collected to the list of previous actions, and then the batch is chosen for training, being split into mini batches, so that every training session would be split into separate smaller trainings. Every smaller training is based on inputting the collected mini batch into the neural network. 
 
