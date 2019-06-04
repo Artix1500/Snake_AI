@@ -12,7 +12,7 @@ class Model:
 
     # aplpha - learning rate, is not used 
     # gamma - how much it will want to have rewards
-    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.9994, gamma=0.3, path_saved_weights='model.h5'):
+    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.9998, gamma=0.3, path_saved_weights='model.h5'):
 
         self.in_size = in_size
         self.out_size = action_num
@@ -24,7 +24,7 @@ class Model:
         self.gamma=gamma
 
         self.path_saved_weights = path_saved_weights
-        #self.load_model(self.path_saved_weights)
+        self.load_model(self.path_saved_weights)
 
     
     
@@ -35,8 +35,8 @@ class Model:
         model = Sequential()
         model.add(Dense(in_between, activation="sigmoid",kernel_initializer=RandomNormal(stddev=1),
            bias_initializer=RandomNormal(stddev=1), input_dim=in_size))
-        model.add(Dense(in_between, activation="sigmoid",kernel_initializer=RandomNormal(stddev=1),
-           bias_initializer=RandomNormal(stddev=1)))
+        #model.add(Dense(in_between, activation="sigmoid",kernel_initializer=RandomNormal(stddev=1),
+        #   bias_initializer=RandomNormal(stddev=1)))
         model.add(Dense(out_size, activation="softmax",kernel_initializer=RandomNormal(stddev=1),
            bias_initializer=RandomNormal(stddev=1)))
         return model
@@ -70,8 +70,8 @@ class Model:
             if done:
                 y_train[i][action]=reward
             else:
-                y_train[i][action]=(1-self.gamma)*reward+self.gamma*np.max(self.model.predict(state_new))
-        
+                y_train[i][action]=reward+self.gamma*np.max(self.model.predict(state_new))
+                #(1-self.gamma)*
         x_train=np.asarray(x_train).reshape(len(minibatch), -1)
         y_train=np.asarray(y_train).reshape(len(minibatch), -1)
         

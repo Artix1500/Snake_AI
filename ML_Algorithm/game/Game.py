@@ -28,7 +28,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption("Snake")
         pygame.font.init()
-        # pygame.display.iconify()
+        #pygame.display.iconify()
         random.seed()
         self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
         self.score_font = pygame.font.Font(None, 25)
@@ -215,10 +215,11 @@ class Game:
         # Wait for user input (here goes agent's move)
         # self.main_snake.display_log()
         self.iterations_count += 1
-        # Here agent is telling what to do
 
         # Waits for our eyes
         #time.sleep(0.2)
+        
+        # Here agent is telling what to do
         self.get_action(action)
         key_pressed = self.wait_for_action()
         if key_pressed == "exit":
@@ -286,29 +287,112 @@ class Game:
 
     def check_apple_all_directions(self):
         # distance = [0,0,0,0]
-        distance = []
+        #distance = []
 
         # snake is eating the apple now  => no reward for that
         if self.snake_eating():
             return [0,0,0,0]
 
+        return self.check_apple()
+
+        '''
         # UP
-        distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y-1))
+        #distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y-1))
+        distance.append(self.distance_give(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y,KEY["UP"]))
         
 
         # DOWN
-        distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y+1))
-
+        #distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y+1))
+        distance.append(self.distance_give(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["DOWN"]))
+        
         # LEFT
-        distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x-1,  self.main_snake.get_head().y))
+        #distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x-1,  self.main_snake.get_head().y))
+        distance.append(self.distance_give(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["LEFT"]))
 
         # RIGHT
-        distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x+1,  self.main_snake.get_head().y))
+        #distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x+1,  self.main_snake.get_head().y))
+        distance.append(self.distance_give(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["RIGHT"]))
 
         return distance
+        '''
+
+        
 
     def distance_calc(self, applex, appley, snakex, snakey):
         return abs(applex - snakex) + abs(appley - snakey)
+    
+    
+    def distance_give(self, applex, appley, snakex,snakey, direction):
+        #distances= []
+        snake_elements_without_tail = self.main_snake.elements[:-1]
+        if direction == KEY["UP"] :
+            if applex==snakex and appley <= snakey:
+                for segment in snake_elements_without_tail:
+                    if segment.x == applex and segment.y < snakey and segment.y > appley:                
+                        return 0
+                return 1
+            return 0
+        if direction == KEY["DOWN"]:
+            if applex==snakex and appley >= snakey:
+                for segment in snake_elements_without_tail:
+                    if segment.x == applex and segment.y > snakey and segment.y < appley:                
+                        return 0
+                return 1
+            return 0;
+        if direction == KEY["LEFT"]:
+            if appley==snakey and applex <= snakex:
+                for segment in snake_elements_without_tail:
+                    if segment.y == appley and segment.x < snakex and segment.x > applex:                
+                        return 0
+                return 1
+            return 0
+        if direction == KEY["RIGHT"]:
+            if appley==snakey and applex >= snakex:
+                for segment in snake_elements_without_tail:
+                    if segment.y == appley and segment.x > snakex and segment.x < applex:                
+                        return 0
+                return 1
+            return 0
+
+    def check_apple(self):
+
+        apple = []
+
+        applex = self.apple.x
+        appley = self.apple.y
+
+        # UP
+        distance = TOOBIG
+        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y - 1)
+
+        if applex==new_head[0] and appley <= new_head[1]:       
+            distance= abs(new_head[1]- appley)
+        apple.append(distance)
+        
+        # DOWN
+        distance = TOOBIG
+        new_head = (self.main_snake.get_head().x, self.main_snake.get_head().y + 1)
+        
+        if applex==new_head[0] and appley >= new_head[1]:  
+            distance= abs(new_head[1]- appley)
+        apple.append(distance)
+
+
+        # LEFT
+        distance = TOOBIG
+        new_head = (self.main_snake.get_head().x - 1, self.main_snake.get_head().y)
+        if appley==new_head[1] and applex <= new_head[0]:
+            distance= abs(new_head[0]- applex)
+        apple.append(distance)
+
+        # RIGHT
+        distance = TOOBIG
+        new_head = (self.main_snake.get_head().x + 1, self.main_snake.get_head().y)
+        if appley==new_head[1] and applex >= new_head[0]:
+            distance= abs(new_head[0]- applex)
+        apple.append(distance)
+
+        return apple
 
 
 
