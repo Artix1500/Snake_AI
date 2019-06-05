@@ -8,20 +8,16 @@ from Model import Model
 
 class Agent:
 
-    def __init__(self, playWithoutTrainingCount=1050): 
+    def __init__(self, playWithoutTrainingCount=1050, gamma=0.4,ifDropout=False, dropoutrate=0.5,path_saved_weights="model.h5", layer3=False, nepochs=2, epsilon=1): 
         
         # you can add path to save the model here
-        self.model = Model()
-
+        self.model = Model(gamma=gamma,ifDropout=ifDropout, droupoutrate=dropoutrate,path_saved_weights=path_saved_weights, layer3=layer3, nepochs=nepochs, epsilon=epsilon)
         self.previous_state = None
         self.previous_action = None
-
         self.state_list = deque(maxlen=10000)
         self.predict_counter = 0
-
         self.batch_size = 0
         self.mini_batch_size = 0
-
         self.playWithoutTrainingCount = playWithoutTrainingCount
 
     
@@ -39,13 +35,14 @@ class Agent:
             print(self.previous_state, previous_reward,self.previous_action, None, game_over)
             self.add_to_state_list(self.previous_state, previous_reward,self.previous_action, None, game_over)
             self.mini_batch_size= min(32, max(1,(int)(self.batch_size/4)))
+
             self.train()
             self.mini_batch_size=0
             self.batch_size=0
             self.previous_state=None
             self.previous_action=None
             return
-        #print(self.previous_state, previous_reward,self.previous_action, state, game_over)
+        print(self.previous_state, previous_reward,self.previous_action, state, game_over)
         # state in next iteration becomes previous_state
         self.previous_state = state
         # get the move prediction from state

@@ -14,7 +14,11 @@ DISPLAY = True
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, visible=True, waitForEyes=False):
+
+        self.visible= visible
+        self.waitForEyes= waitForEyes
+
         self.iterations_count = 0
         self.score = 0
         #self.main_snake = Snake(4, 4 )
@@ -28,7 +32,10 @@ class Game:
         pygame.init()
         pygame.display.set_caption("Snake")
         pygame.font.init()
-        #pygame.display.iconify()
+
+        if (not self.visible):
+            pygame.display.iconify()
+        
         random.seed()
         self.main_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE)
         self.score_font = pygame.font.Font(None, 25)
@@ -46,6 +53,8 @@ class Game:
         self.snake_image = pygame.transform.scale(
             pygame.image.load(os.path.join(image_path, "snake_box.jpg")).convert_alpha(),
             (BLOCK_SIZE, BLOCK_SIZE))
+
+
 
     def get_info(self):
         closest_right = 1
@@ -155,7 +164,7 @@ class Game:
         return Apple(x, y, True)
 
     def rerun(self):
-        self.__init__()
+        self.__init__(self.visible, self.waitForEyes)
 
     def end_game(self):
         # self.get_info()
@@ -215,9 +224,8 @@ class Game:
         # Wait for user input (here goes agent's move)
         # self.main_snake.display_log()
         self.iterations_count += 1
-
-        # Waits for our eyes
-        #time.sleep(0.2)
+        if self.waitForEyes:
+            time.sleep(0.3)
         
         # Here agent is telling what to do
         self.get_action(action)
@@ -258,12 +266,15 @@ class Game:
              return REWARD["DEATH"]
         apple_distance = abs(self.apple.x - self.main_snake.get_head().x) + abs(self.apple.y - self.main_snake.get_head().y)
 
-
+        
         # ------DIFFICULT SCENARIO---------
         if apple_distance == 0:
             apple_part = REWARD["EAT"]
         # ---------------------------------
-
+       
+        #if self.apple.x == self.main_snake.get_head().x || self.apple.y == self.main_snake.get_head().y:
+        #    apple_part+=REWARD["EAT"]*0.2
+       
         # # -------EASIER SCENARIO-----------
         # apple_part = (1-(apple_distance/(BOARD_HEIGHT+BOARD_WIDTH))) * REWARD["EAT"]
         # # ---------------------------------
@@ -287,34 +298,40 @@ class Game:
 
     def check_apple_all_directions(self):
         # distance = [0,0,0,0]
-        #distance = []
+        distance = []
 
         # snake is eating the apple now  => no reward for that
         if self.snake_eating():
-            return [0,0,0,0]
+            return [TOOBIG,TOOBIG,TOOBIG,TOOBIG]
 
-        return self.check_apple()
-
-        '''
+        #return self.check_apple()
+        
         # UP
-        #distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y-1))
-        distance.append(self.distance_give(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y,KEY["UP"]))
+        distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y-1))
+        #distance.append(self.distance_give(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y,KEY["UP"]))
         
 
         # DOWN
-        #distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y+1))
-        distance.append(self.distance_give(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["DOWN"]))
+        distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y+1))
+        #distance.append(self.distance_give(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["DOWN"]))
         
         # LEFT
-        #distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x-1,  self.main_snake.get_head().y))
-        distance.append(self.distance_give(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["LEFT"]))
+        distance.append(self.distance_calc(self.apple.x,self.apple.y, self.main_snake.get_head().x-1,  self.main_snake.get_head().y))
+        #distance.append(self.distance_give(self.apple.x,self.apple.y, self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["LEFT"]))
 
         # RIGHT
-        #distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x+1,  self.main_snake.get_head().y))
-        distance.append(self.distance_give(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["RIGHT"]))
+        distance.append(self.distance_calc(self.apple.x, self.apple.y,self.main_snake.get_head().x+1,  self.main_snake.get_head().y))
+        #distance.append(self.distance_give(self.apple.x, self.apple.y,self.main_snake.get_head().x,  self.main_snake.get_head().y, KEY["RIGHT"]))
 
+       
+        colissions= self.check_collisions_all_directions()
+        for i in range(len(colissions)):
+            if(colissions[i]<=0):
+                distance[i]=TOOBIG
+
+        print(distance)
         return distance
-        '''
+        
 
         
 

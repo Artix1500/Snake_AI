@@ -1,6 +1,7 @@
 import random
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.layers import Dropout
 from keras import losses
 from keras.initializers import RandomNormal
 import numpy as np
@@ -12,7 +13,12 @@ class Model:
 
     # aplpha - learning rate, is not used 
     # gamma - how much it will want to have rewards
-    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.9998, gamma=0.3, path_saved_weights='model.h5'):
+    def __init__(self, action_num=4, in_size=8, epsilon=1,epsilon_rate=0.9998, gamma=0.4, path_saved_weights='model.h5', layer3=False, ifDropout=False, droupoutrate=0.5, nepochs=2):
+        self.gamma=gamma
+        self.ifDropout=ifDropout
+        self.layer3=layer3
+        self.Dropoutrate=droupoutrate
+        self.nepochs=nepochs
 
         self.in_size = in_size
         self.out_size = action_num
@@ -21,7 +27,8 @@ class Model:
         self.epsilon = epsilon
         self.epsilon_rate = epsilon_rate
         self.min_epsilon = 0.25
-        self.gamma=gamma
+        if epsilon==0:
+            self.min_epsilon=0
 
         self.path_saved_weights = path_saved_weights
         self.load_model(self.path_saved_weights)
@@ -33,10 +40,15 @@ class Model:
 
     def build_model(self, in_size, in_between, out_size):
         model = Sequential()
-        model.add(Dense(in_between, activation="sigmoid",kernel_initializer=RandomNormal(stddev=1),
+        model.add(Dense(in_between, activation="softmax",kernel_initializer=RandomNormal(stddev=1),
            bias_initializer=RandomNormal(stddev=1), input_dim=in_size))
-        #model.add(Dense(in_between, activation="sigmoid",kernel_initializer=RandomNormal(stddev=1),
-        #   bias_initializer=RandomNormal(stddev=1)))
+        if self.ifDropout:
+            model.add(Dropout(self.Dropoutrate))
+        if self.layer3:
+            model.add(Dense(in_between, activation="softmax",kernel_initializer=RandomNormal(stddev=1),
+                bias_initializer=RandomNormal(stddev=1)))
+        if self.ifDropout:
+            model.add(Dropout(self.Dropoutrate))
         model.add(Dense(out_size, activation="softmax",kernel_initializer=RandomNormal(stddev=1),
            bias_initializer=RandomNormal(stddev=1)))
         return model
@@ -49,7 +61,7 @@ class Model:
 
         x_train = []
         y_train = []
-        
+        #print(minibatch)
         for i in range(len(minibatch)):
         
             data_piece=minibatch[i]
@@ -74,11 +86,13 @@ class Model:
                 #(1-self.gamma)*
         x_train=np.asarray(x_train).reshape(len(minibatch), -1)
         y_train=np.asarray(y_train).reshape(len(minibatch), -1)
+        #print(x_train)
+        #print(y_train)
         
         self.model.fit(x_train,
                         y_train,
                            batch_size=len(minibatch),
-                           epochs=2,
+                           epochs=self.nepochs,
                            verbose=2)
 
         
@@ -96,6 +110,7 @@ class Model:
             return toRet
         else:
             ret = self.model.predict(x)
+            #print(ret)
             toRet = ret.argmax()
             if(x[0][toRet] == 0): 
                 print('predicted Move kills')

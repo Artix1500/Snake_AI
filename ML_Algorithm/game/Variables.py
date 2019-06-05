@@ -10,7 +10,7 @@ TOOBIG=1000
 BOARD_HEIGHT = SCREEN_HEIGHT // BLOCK_SIZE
 BOARD_WIDTH = SCREEN_WIDTH // BLOCK_SIZE
 KEY = {"UP": 0, "DOWN": 1, "LEFT": 2, "RIGHT": 3, "YES": 4, "NO": 5, "EXIT": 6}
-REWARD = {"DEATH" : 0, "EAT" : 0.85, "LIVE" : 0.15}
+REWARD = {"DEATH" : 0, "EAT" : 0.5, "LIVE" : 0.5}
 
 def check_collision(pos1, pos2):
     if(pos1.x == pos2.x and pos1.y == pos2.y):
