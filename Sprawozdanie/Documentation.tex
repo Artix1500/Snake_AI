@@ -83,7 +83,7 @@ Q : S \times A \rightarrow \rm I\!R
 	\label{fig:snakeenv}
 \end{figure}
 
-\par As we can see we give the agent information in four directions. It is because the agent can only choose from four possible moves, top, down, left and right. The information is for every direction is the distance to the nearest collision and distance to the apple (the point). The distances were counted in multiple ways, because as it is obvious not all of them were equally good. The collision distances were always the same - how many moves in this direction snake needs to make to die, the apple distance though varied. We started from Euclidean distance to the apple from every 'next possible move' and finally based our model on a distance which gave zero when the apple was not in this direction at all and binary 0/1 when apple was in the direction given, with partial points in the range from 0 to 1 on apple being somewhere diagonally. So finally the state is counted in a given way presented with a simple algorithm \ref{state}:
+\par As we can see we give the agent information in four directions. It is because the agent can only choose from four possible moves, top, down, left and right. The information is for every direction is the distance to the nearest collision and distance to the apple (the point). The distances were counted in multiple ways, because as it is obvious not all of them were equally good. The collision distances were almost always the same - how many moves in this direction snake needs to make to die, the apple distance though varied. We started from Euclidean distance to the apple from every 'next possible move' and finally based our model on a distance which gave zero when the apple was not in this direction at all and binary 0/1 when apple was in the direction given, with partial points in the range from 0 to 1 on apple being somewhere diagonally. So finally the state is counted in a given way presented with a simple algorithm \ref{state}:
 
 
 \begin{algorithm}	
@@ -110,9 +110,41 @@ Q : S \times A \rightarrow \rm I\!R
 
 \newpage
 
+\par The only problem which we tried to solve and still didn't find the proper answer to is, if our state vector has only positive values (let us make this assumption), should the neural network be able to make out the subtle differences that some cells in the vector, if they are positive, give the model greater chance of getting a bigger reward, on the other hand some other positive values might stand for negative things - like collisions. Are the neural networks sophisticated enough to catch that? We would surely assume that it should but we did have some problems when we tried this method for collision checking.
+
 \par This was presented the final way of counting the state before putting it into the neural network which is set to provide us with the values with which the neurons corresponding to each action/move is fired. From the neurons activity the agent is choosing the mostly rewarded action and that's how the process is going in an iterative way. 
 
-\par On Game Over the environment is reset to the starting state which is having the snake of length four, facing the bottom direction with an apple in a random spot of the board. The neural network is preserved with every iteration and the information is later used for training.
+\par The problem of giving the agent a proper reward is also important. As mentioned before reward is the key factor that is enabling the Agent in Q Learning to teach itself how to perform well (according to what we, humans, tell him is a good way of acting). To give the best outcomes reward is given as a real number from a range \begin{math} (0,1) \end{math}. Having normalised reward makes some problems more visible, cause the range is small enough for us to notice and count easily the reward percentage. 
+
+\par We tried various rewards from binary to real and normalised and also not normalised at all. As it seems to be, normalised reward do gives the best outcome but sometimes, when it is too precise it gives a feeling of guiding the snake holding a carrot on the stick, instead of actually teaching him. But this is a subject of a rather different dispute. 
+
+\par Our reward we agreed upon can be counted in a such way, presented below on \ref{reward}:
+
+\begin{algorithm}	
+	\caption{Count reward}\label{reward}	
+	\begin{algorithmic}[1]
+		\Procedure{CountReward}{}
+		\If {$\textit{snake} \text{ is not}\textit{ alive}$}
+		\Return $\textit{deathReward}$
+		\Else
+			\State $\textit{appleDist} \gets \text{distance from the }\textit{apple}$
+			\If {$\textit{appleDist} \text{ is }\textit{0}$}
+			\Return $\textit{eatReward}$
+			\Else
+			\Return $\textit{liveReward} \text{ + } \textit{eatReward / appleDist}$
+			\EndIf
+		\EndIf
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\par It is crucial to remember that we need to reward for getting the point, but staying alive is also a good feat. In a learning process when the game has more complex goals, reward must be somehow split between those things and we have to decide what is more valuable and how to balance the output given for the agent.
+
+\par As we have learned it is very hard to train the agent the importance of both living and eating apples, thus getting points. Changing the reward from a lot points for living and less points for eating led to the Agent neglecting the point collecting whatsoever but focusing on getting to the point where the apple was is also hard because the Agent has to move around in the 'city metrics', having to chose only from four directions. The apple distance itself (counted as a percentage) is also not the best way for counting the reward because the distance which we can get changing our current position to some other is at least as much important as is the direction right. Also how to balance getting closer to the apple with getting closer to the wall and a spike of the negative values? 
+
+\par Complicated environments must have it very hard to present the right reward for the right action, optimizing for gains and losses. 
+
+\par On Game Over the environment is taken back to the starting state which is having the snake of length four, facing the bottom direction with an apple in a random spot of the board. The neural network is preserved with every iteration and the information is later used for training.
 
 \subsection{Training}
 
@@ -162,6 +194,6 @@ QRecord = (Previous State, Reward, Action, Next State, Game Over)
 
 \par Having that in mind we have also created a way to input and output our model into a \textit{.csv} file. Thanks to this practise we can train our model partially, save data to file, and keep training it later on. Also we can compare models trained with different approaches, with various ways of counting the state (distance to the apple) and various training methods. 
 
-\par As a good practice in Machine Learning we also put something called \textit{Epsilon} which is a percentage with which random moves are chosen instead of predicting rewards from our neural network. This enables the model to explore new paths, and prevents from falling into a local maximum. As the model is getting better in predicting the correct moves, the \textit{Epsilon} is decreasing, in our case we decrease it by every thousand games. 
+\par As a good practice in Machine Learning we also put something called \textit{Epsilon} which is a percentage with which random moves are chosen instead of predicting rewards from our neural network. This enables the model to explore new paths, and prevents from falling into a local maximum. As the model is getting better in predicting the correct moves, the \textit{Epsilon} is decreasing, in our case we decrease it by every thousand games.
 
 \end{document}
