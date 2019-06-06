@@ -208,4 +208,27 @@ QRecord = (Previous State, Reward, Action, Next State, Game Over)
 
 \subsection{Performance overall}
 
+\par We had a lot of changes and enhancements in our project, all based on the results given by the trained snake. We were able to train a snake that wasn't killing itself-it simple was going in circle, however it wasn't eating any apple. On the other hand we also created a model that was eating few apples but it was killing itself instead.
+
+\par After checking our snake's performance on longer periods of training, which are time-consuming, we have chosen a different way check our snake. To check which aproach is better, for example whether the network with one hidden layer or two will show better results we prepared diffrent cases to train for 30 000 episodes (games) and see which one has outperformed.
+
+\par Here is the table with the parameters and the results. Results are based 10 games played by each snake with the epsilon set to 0. All of the trained Snakes had troubles with corners, and mostly were dying in there.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{llllll}
+		gamma & nr. of layers & dropout rate & nr. of epochs & average lifespan & average points \\
+		0.4   & 2                & No dropout   & 2                & 32.7             & 0.2                  \\
+		0.2   & 2                & No dropout   & 2                & 18.6             & 0.2                  \\
+		0.6   & 2                & No dropout   & 2                & 25.1             & 0                    \\
+		0.8   & 2                & No dropout   & 2                & 20.5             & 0.3                  \\
+		0.4   & 3                & 0.3          & 6                & 15.8             & 0.1                  \\
+		0.4   & 3                & 0.5          & 6                & 11.2             & 0.2                  \\
+		0.4   & 3                & No dropout   & 4                & 21               & 0.1                  \\
+		0.2   & 3                & No dropout   & 4                & 39.1             & 0                    \\
+		0.6   & 3                & No dropout   & 4                & 17               & 0                    \\
+		0.8   & 3                & No dropout   & 4                & 19.3             & 0.1                 
+	\end{tabular}
+\end{table}
+
 \end{document}
