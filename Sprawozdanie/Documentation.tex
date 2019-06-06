@@ -196,4 +196,16 @@ QRecord = (Previous State, Reward, Action, Next State, Game Over)
 
 \par As a good practice in Machine Learning we also put something called \textit{Epsilon} which is a percentage with which random moves are chosen instead of predicting rewards from our neural network. This enables the model to explore new paths, and prevents from falling into a local maximum. As the model is getting better in predicting the correct moves, the \textit{Epsilon} is decreasing, in our case we decrease it by every thousand games.
 
+\section{Results}
+
+\subsection{Neural network}
+
+\par Choosing the neural network over a basic Q table was an interesting choice for a couple of reasons. Such networks enable us to work with it with a very low input in building the model itself. Neural network is a sort of a standalone model that only needs the programmer to input the variable vector - information from the environment and also train the model when needed. Apart from that all the calculations and neuron activity is happening inside the network, we do not interact with that.
+
+\par One of the problems we had is just that - the sole fact that the network is a very standalone entity and we cannot do much about what is happening inside of it once we input the vector of values. We were tweaking and changing both the reward system, and the distances (impulses getting to the Agent from the environment of the game) - what we called previously a state but the results were always almost accidental. After around 30.000 iterations, whatever the gamma or if there was a third layer in the network at all, the Agent was able not to die, but we could not teach him to pick the apples. And the only action that we could undertake is longer training and trying to expose the agent to such situations in which he failed to do what we wanted him to do. 
+
+\par The hermetic structure of a neural network was sometimes hard to work with cause we were only left with working with just the values vector, leaving all the 'inside job' to the closed model of the network.
+
+\subsection{Performance overall}
+
 \end{document}
